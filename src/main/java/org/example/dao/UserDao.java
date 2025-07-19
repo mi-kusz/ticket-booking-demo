@@ -1,15 +1,11 @@
 package org.example.dao;
 
 import org.example.dto.UserDto;
-import org.example.jooq.generated.tables.records.UsersRecord;
 import org.jooq.DSLContext;
 import org.jooq.Record;
-import org.jooq.UpdateSetFirstStep;
-import org.jooq.UpdateSetMoreStep;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import static org.example.jooq.generated.tables.Users.USERS;

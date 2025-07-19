@@ -1,10 +1,7 @@
 package dao;
 
-import org.example.dao.EventDao;
 import org.example.dao.SeatDao;
-import org.example.dto.EventDto;
 import org.example.dto.SeatDto;
-import static org.example.jooq.generated.tables.Seats.*;
 import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.jooq.Result;
@@ -18,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Optional;
 
+import static org.example.jooq.generated.tables.Seats.SEATS;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class SeatDaoTest

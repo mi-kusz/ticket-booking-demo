@@ -1,8 +1,6 @@
 package dao;
 
-import org.example.dao.SeatDao;
 import org.example.dao.TicketDao;
-import org.example.dto.SeatDto;
 import org.example.dto.TicketDto;
 import org.jooq.DSLContext;
 import org.jooq.Record;

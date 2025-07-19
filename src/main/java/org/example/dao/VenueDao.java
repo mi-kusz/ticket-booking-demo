@@ -1,14 +1,10 @@
 package org.example.dao;
 
 import org.example.dto.VenueDto;
-import org.example.jooq.generated.tables.records.VenuesRecord;
 import org.jooq.DSLContext;
 import org.jooq.Record;
-import org.jooq.UpdateSetFirstStep;
-import org.jooq.UpdateSetMoreStep;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import static org.example.jooq.generated.tables.Venues.VENUES;
