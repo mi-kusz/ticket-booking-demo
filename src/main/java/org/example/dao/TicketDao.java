@@ -60,6 +60,17 @@ public class TicketDao
                 .execute();
     }
 
+    public int modifyTicket(TicketDto ticketDto)
+    {
+        return dsl.update(TICKETS)
+                .set(TICKETS.EVENT_ID, ticketDto.eventId())
+                .set(TICKETS.SEAT_ID, ticketDto.seatId())
+                .set(TICKETS.USER_ID, ticketDto.userId())
+                .set(TICKETS.BOOKED_AT, ticketDto.bookedAt())
+                .where(TICKETS.TICKET_ID.eq(ticketDto.ticketId()))
+                .execute();
+    }
+
     private TicketDto toDto(Record r)
     {
         return TicketDto.create(

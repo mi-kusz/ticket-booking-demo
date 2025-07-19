@@ -1,6 +1,8 @@
 package dao;
 
+import org.example.dao.EventDao;
 import org.example.dao.SeatDao;
+import org.example.dto.EventDto;
 import org.example.dto.SeatDto;
 import static org.example.jooq.generated.tables.Seats.*;
 import org.jooq.DSLContext;
@@ -258,5 +260,18 @@ public class SeatDaoTest
         int affected = dao.addSeat(seat);
 
         assertEquals(0, affected);
+    }
+
+    @Test
+    public void testModifySeat()
+    {
+        SeatDto seat = testSeat();
+
+        MockDataProvider dataProvider = ctx -> new MockResult[] { new MockResult(1, null) };
+
+        SeatDao dao = new SeatDao(dslFor(dataProvider));
+        int affected = dao.modifySeat(seat);
+
+        assertEquals(1, affected);
     }
 }

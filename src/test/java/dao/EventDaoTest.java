@@ -276,8 +276,8 @@ public class EventDaoTest
 
         MockDataProvider dataProvider = ctx -> new MockResult[] { new MockResult(1, null) };
 
-        EventDao eventDao = new EventDao(dslFor(dataProvider));
-        int affected = eventDao.modifyEvent(event);
+        EventDao dao = new EventDao(dslFor(dataProvider));
+        int affected = dao.modifyEvent(event);
 
         assertEquals(1, affected);
     }

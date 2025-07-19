@@ -68,27 +68,11 @@ public class UserDao
 
     public int modifyUser(UserDto userDto)
     {
-        UpdateSetFirstStep<UsersRecord> emptyQuery = dsl.update(USERS);
-        UpdateSetMoreStep<UsersRecord> builtQuery = null;
-
-        if (userDto.name() != null)
-        {
-            builtQuery = emptyQuery.set(USERS.NAME, userDto.name());
-        }
-
-        if (userDto.email() != null)
-        {
-            builtQuery = Objects.requireNonNullElse(builtQuery, emptyQuery).set(USERS.EMAIL, userDto.email());
-        }
-
-        if (builtQuery == null)
-        {
-            return 0;
-        }
-        else
-        {
-            return builtQuery.where(USERS.USER_ID.eq(userDto.userId())).execute();
-        }
+        return dsl.update(USERS)
+                .set(USERS.NAME, userDto.name())
+                .set(USERS.EMAIL, userDto.email())
+                .where(USERS.USER_ID.eq(userDto.userId()))
+                .execute();
     }
 
     private UserDto toDto(Record r)

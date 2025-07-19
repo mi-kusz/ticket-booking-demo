@@ -65,27 +65,11 @@ public class VenueDao
 
     public int modifyVenue(VenueDto venueDto)
     {
-        UpdateSetFirstStep<VenuesRecord> emptyQuery = dsl.update(VENUES);
-        UpdateSetMoreStep<VenuesRecord> builtQuery = null;
-
-        if (venueDto.name() != null)
-        {
-            builtQuery = emptyQuery.set(VENUES.NAME, venueDto.name());
-        }
-
-        if (venueDto.address() != null)
-        {
-            builtQuery = Objects.requireNonNullElse(builtQuery, emptyQuery).set(VENUES.ADDRESS, venueDto.address());
-        }
-
-        if (builtQuery == null)
-        {
-            return 0;
-        }
-        else
-        {
-            return builtQuery.where(VENUES.VENUE_ID.eq(venueDto.venueId())).execute();
-        }
+        return dsl.update(VENUES)
+                .set(VENUES.NAME, venueDto.name())
+                .set(VENUES.ADDRESS, venueDto.address())
+                .where(VENUES.VENUE_ID.eq(venueDto.venueId()))
+                .execute();
     }
 
     private VenueDto toDto(Record r)

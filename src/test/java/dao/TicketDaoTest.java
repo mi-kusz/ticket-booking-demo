@@ -1,6 +1,8 @@
 package dao;
 
+import org.example.dao.SeatDao;
 import org.example.dao.TicketDao;
+import org.example.dto.SeatDto;
 import org.example.dto.TicketDto;
 import org.jooq.DSLContext;
 import org.jooq.Record;
@@ -344,6 +346,19 @@ public class TicketDaoTest
 
         TicketDao dao = new TicketDao(dslFor(dataProvider));
         int affected = dao.addTicket(ticket);
+
+        assertEquals(1, affected);
+    }
+
+    @Test
+    public void testModifyTicket()
+    {
+        TicketDto ticket = testTicket();
+
+        MockDataProvider dataProvider = ctx -> new MockResult[] { new MockResult(1, null) };
+
+        TicketDao dao = new TicketDao(dslFor(dataProvider));
+        int affected = dao.modifyTicket(ticket);
 
         assertEquals(1, affected);
     }

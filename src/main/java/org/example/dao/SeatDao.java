@@ -51,6 +51,16 @@ public class SeatDao
                 .execute();
     }
 
+    public int modifySeat(SeatDto seatDto)
+    {
+        return dsl.update(SEATS)
+                .set(SEATS.VENUE_ID, seatDto.venueId())
+                .set(SEATS.SEAT_ROW, seatDto.seatRow())
+                .set(SEATS.SEAT_NUMBER, seatDto.seatNumber())
+                .where(SEATS.SEAT_ID.eq(seatDto.seatId()))
+                .execute();
+    }
+
     private SeatDto toDto(Record r)
     {
         return SeatDto.create(

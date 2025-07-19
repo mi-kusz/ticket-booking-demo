@@ -60,32 +60,11 @@ public class EventDao
 
     public int modifyEvent(EventDto eventDto)
     {
-        UpdateSetFirstStep<EventsRecord> emptyQuery = dsl.update(EVENTS);
-        UpdateSetMoreStep<EventsRecord> builtQuery = null;
-
-        if (eventDto.name() != null)
-        {
-            builtQuery = emptyQuery.set(EVENTS.NAME, eventDto.name());
-        }
-
-        if (eventDto.startTime() != null)
-        {
-            builtQuery = Objects.requireNonNullElse(builtQuery, emptyQuery).set(EVENTS.START_TIME, eventDto.startTime());
-        }
-
-        if (eventDto.endTime() != null)
-        {
-            builtQuery = Objects.requireNonNullElse(builtQuery, emptyQuery).set(EVENTS.END_TIME, eventDto.endTime());
-        }
-
-        if (builtQuery == null)
-        {
-            return 0;
-        }
-        else
-        {
-            return builtQuery.where(EVENTS.EVENT_ID.eq(eventDto.eventId())).execute();
-        }
+        return dsl.update(EVENTS)
+                .set(EVENTS.NAME, eventDto.name())
+                .set(EVENTS.START_TIME, eventDto.startTime())
+                .set(EVENTS.END_TIME, eventDto.endTime())
+                .where(EVENTS.EVENT_ID.eq(eventDto.eventId())).execute();
     }
 
     private EventDto toDto(Record r)
