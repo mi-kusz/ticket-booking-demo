@@ -14,17 +14,18 @@ import java.util.Optional;
 import static spark.Spark.get;
 import static spark.Spark.path;
 
-public class UserRoutes
+public class UserRoutesProvider implements RoutesProvider
 {
     private final UserDao userDao;
     private final Gson gson;
 
-    public UserRoutes(DSLContext dsl, Gson gson)
+    public UserRoutesProvider(DSLContext dsl, Gson gson)
     {
         userDao = new UserDao(dsl);
         this.gson = gson;
     }
 
+    @Override
     public void registerRoutes()
     {
         path("/users", () -> {
@@ -73,7 +74,9 @@ public class UserRoutes
                     {
                         response.status(400);
                         return """
-                            Invalid datetime format.
+                            {
+                                "error": "Invalid datetime format"
+                            }
                             """;
                     }
                 }
@@ -110,8 +113,10 @@ public class UserRoutes
             {
                 response.status(400);
                 return """
-                            Invalid id format. Must be an integer
-                            """;
+                        {
+                            "error": "Invalid id format. Must be an integer"
+                        }
+                        """;
             }
             Optional<UserDto> result = userDao.findUserById(userId);
 
@@ -124,8 +129,10 @@ public class UserRoutes
             {
                 response.status(404);
                 return """
-                            User not found
-                            """;
+                        {
+                            "error": "User not found"
+                        }
+                        """;
             }
         });
     }
@@ -145,8 +152,10 @@ public class UserRoutes
             {
                 response.status(404);
                 return """
-                            User not found
-                            """;
+                        {
+                            "error": "User not found"
+                        }
+                        """;
             }
         });
     }

@@ -12,21 +12,23 @@ import java.util.Optional;
 import static spark.Spark.get;
 import static spark.Spark.path;
 
-public class VenueRoutes
+public class VenueRoutesProvider implements RoutesProvider
 {
     private final VenueDao venueDao;
     private final Gson gson;
 
-    public VenueRoutes(DSLContext dsl, Gson gson)
+    public VenueRoutesProvider(DSLContext dsl, Gson gson)
     {
         this.venueDao = new VenueDao(dsl);
         this.gson = gson;
     }
 
+    @Override
     public void registerRoutes()
     {
         path("/venues", () -> {
-
+            findVenues();
+            routeFindVenueById();
         });
     }
 
@@ -92,8 +94,10 @@ public class VenueRoutes
             {
                 response.status(400);
                 return """
-                            Invalid id format. Must be an integer
-                            """;
+                        {
+                            "error": "Invalid id format. Must be an integer"
+                        }
+                        """;
             }
 
             Optional<VenueDto> result = venueDao.findVenueById(venueId);
@@ -107,7 +111,9 @@ public class VenueRoutes
             {
                 response.status(404);
                 return """
-                        Venue not found
+                        {
+                            "error": "Venue not found"
+                        }
                         """;
             }
         }));

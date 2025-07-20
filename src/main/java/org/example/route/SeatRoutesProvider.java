@@ -12,17 +12,18 @@ import java.util.Optional;
 import static spark.Spark.get;
 import static spark.Spark.path;
 
-public class SeatRoutes
+public class SeatRoutesProvider implements RoutesProvider
 {
     private final SeatDao seatDao;
     private final Gson gson;
 
-    public SeatRoutes(DSLContext dsl, Gson gson)
+    public SeatRoutesProvider(DSLContext dsl, Gson gson)
     {
         this.seatDao = new SeatDao(dsl);
         this.gson = gson;
     }
 
+    @Override
     public void registerRoutes()
     {
         path("/seats", () -> {
@@ -130,7 +131,9 @@ public class SeatRoutes
             {
                 response.status(404);
                 return """
-                        Seat not found
+                        {
+                            "error": "Seat not found"
+                        }
                         """;
             }
         }));

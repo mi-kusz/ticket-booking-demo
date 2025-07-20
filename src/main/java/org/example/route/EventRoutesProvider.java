@@ -14,17 +14,18 @@ import java.util.Optional;
 import static spark.Spark.get;
 import static spark.Spark.path;
 
-public class EventRoutes
+public class EventRoutesProvider implements RoutesProvider
 {
     private final EventDao eventDao;
     private final Gson gson;
 
-    public EventRoutes(DSLContext dsl, Gson gson)
+    public EventRoutesProvider(DSLContext dsl, Gson gson)
     {
         this.eventDao = new EventDao(dsl);
         this.gson = gson;
     }
 
+    @Override
     public void registerRoutes()
     {
         path("/events", () -> {
@@ -72,7 +73,9 @@ public class EventRoutes
                     {
                         response.status(400);
                         return """
-                            Invalid datetime format.
+                            {
+                                "error": "Invalid datetime format"
+                            }
                             """;
                     }
                 }
@@ -109,8 +112,10 @@ public class EventRoutes
             {
                 response.status(400);
                 return """
-                            Invalid id format. Must be an integer
-                            """;
+                        {
+                            "error": "Invalid id format. Must be an integer"
+                        }
+                        """;
             }
 
             Optional<EventDto> result = eventDao.findEventById(eventId);
@@ -124,7 +129,9 @@ public class EventRoutes
             {
                 response.status(404);
                 return """
-                        Event not found
+                        {
+                            "error": "Event not found"
+                        }
                         """;
             }
         }));

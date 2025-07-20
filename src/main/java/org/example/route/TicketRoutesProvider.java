@@ -14,17 +14,18 @@ import java.util.Optional;
 import static spark.Spark.get;
 import static spark.Spark.path;
 
-public class TicketRoutes
+public class TicketRoutesProvider implements RoutesProvider
 {
     private final TicketDao ticketDao;
     private final Gson gson;
 
-    public TicketRoutes(DSLContext dsl, Gson gson)
+    public TicketRoutesProvider(DSLContext dsl, Gson gson)
     {
         this.ticketDao = new TicketDao(dsl);
         this.gson = gson;
     }
 
+    @Override
     public void registerRoutes()
     {
         path("/tickets", () -> {
@@ -84,14 +85,18 @@ public class TicketRoutes
                 {
                     response.status(400);
                     return """
-                            Invalid id format. Must be an integer
-                            """;
+                        {
+                            "error": "Invalid id format. Must be an integer"
+                        }
+                        """;
                 }
                 catch (DateTimeParseException e)
                 {
                     response.status(400);
                     return """
-                            Invalid datetime format.
+                            {
+                                "error": "Invalid datetime format"
+                            }
                             """;
                 }
 
@@ -123,8 +128,10 @@ public class TicketRoutes
             {
                 response.status(400);
                 return """
-                            Invalid id format. Must be an integer
-                            """;
+                        {
+                            "error": "Invalid id format. Must be an integer"
+                        }
+                        """;
             }
 
             Optional<TicketDto> result = ticketDao.findTicketById(ticketId);
@@ -138,8 +145,10 @@ public class TicketRoutes
             {
                 response.status(404);
                 return """
-                            Ticket not found
-                            """;
+                        {
+                            "error": "Ticket not found"
+                        }
+                        """;
             }
         });
     }
