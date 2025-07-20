@@ -18,6 +18,13 @@ public class SeatDao
         this.dsl = dsl;
     }
 
+    public List<SeatDto> findSeats()
+    {
+        return dsl.selectFrom(SEATS)
+                .fetch()
+                .map(this::toDto);
+    }
+
     public Optional<SeatDto> findSeatById(int seatId)
     {
         Record seatRecord = dsl.selectFrom(SEATS)

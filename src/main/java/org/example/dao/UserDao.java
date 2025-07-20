@@ -19,6 +19,13 @@ public class UserDao
         this.dsl = dsl;
     }
 
+    public List<UserDto> findUsers()
+    {
+        return dsl.selectFrom(USERS)
+                .fetch()
+                .map(this::toDto);
+    }
+
     public Optional<UserDto> findUserById(int userId)
     {
         Record userRecord =  dsl.selectFrom(USERS)

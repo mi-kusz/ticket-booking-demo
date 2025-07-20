@@ -19,6 +19,13 @@ public class TicketDao
         this.dsl = dsl;
     }
 
+    public List<TicketDto> findTickets()
+    {
+        return dsl.selectFrom(TICKETS)
+                .fetch()
+                .map(this::toDto);
+    }
+
     public Optional<TicketDto> findTicketById(int ticketId)
     {
         Record ticketRecord = dsl.selectFrom(TICKETS)

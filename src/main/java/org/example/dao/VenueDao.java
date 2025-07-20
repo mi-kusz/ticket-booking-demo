@@ -18,6 +18,13 @@ public class VenueDao
         this.dsl = dsl;
     }
 
+    public List<VenueDto> findVenues()
+    {
+        return dsl.selectFrom(VENUES)
+                .fetch()
+                .map(this::toDto);
+    }
+
     public Optional<VenueDto> findVenueById(int venueId)
     {
         Record venueRecord = dsl.selectFrom(VENUES)

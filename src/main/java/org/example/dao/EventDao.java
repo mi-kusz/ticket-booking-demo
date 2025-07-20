@@ -19,6 +19,13 @@ public class EventDao
         this.dsl = dsl;
     }
 
+    public List<EventDto> findEvents()
+    {
+        return dsl.selectFrom(EVENTS)
+                .fetch()
+                .map(this::toDto);
+    }
+
     public Optional<EventDto> findEventById(int eventId)
     {
         Record eventRecord = dsl.selectFrom(EVENTS)
