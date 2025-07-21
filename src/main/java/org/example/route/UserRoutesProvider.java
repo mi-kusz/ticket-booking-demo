@@ -1,6 +1,7 @@
 package org.example.route;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import org.example.dao.UserDao;
 import org.example.dto.UserDto;
 import org.example.util.Util;
@@ -13,8 +14,7 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
 
-import static spark.Spark.get;
-import static spark.Spark.path;
+import static spark.Spark.*;
 
 public class UserRoutesProvider implements RoutesProvider
 {
@@ -35,6 +35,7 @@ public class UserRoutesProvider implements RoutesProvider
             routeFindUsers();
             routeFindUserById();
             routeFindUserByEmail();
+            routeAddUser();
         });
     }
 
@@ -176,6 +177,41 @@ public class UserRoutesProvider implements RoutesProvider
                         }
                         """;
             }
+        });
+    }
+
+    private void routeAddUser()
+    {
+        post("", (request, response) -> {
+            UserDto userDto;
+
+            try
+            {
+                userDto = gson.fromJson(request.body(), UserDto.class);
+            }
+            catch (JsonSyntaxException e)
+            {
+                log.error("Wrong structure of UserDto JSON");
+                response.status(400);
+                return """
+                            "error": "Cannot parse JSON"
+                        """;
+            }
+
+            int affected = userDao.addUser(userDto);
+
+            if (affected == 1)
+            {
+                log.info("User added to database");
+                response.status(200);
+            }
+            else
+            {
+                log.error("User cannot be added to database");
+                response.status(400);
+            }
+
+            return gson.toJson(userDto);
         });
     }
 }
