@@ -5,6 +5,8 @@ import org.example.dao.VenueDao;
 import org.example.dto.VenueDto;
 import org.example.util.Util;
 import org.jooq.DSLContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,6 +16,7 @@ import static spark.Spark.path;
 
 public class VenueRoutesProvider implements RoutesProvider
 {
+    private static final Logger log = LoggerFactory.getLogger(VenueRoutesProvider.class);
     private final VenueDao venueDao;
     private final Gson gson;
 
@@ -45,6 +48,8 @@ public class VenueRoutesProvider implements RoutesProvider
             String name = request.queryParams("name");
             String address = request.queryParams("address");
 
+            log.info("Received GET /venues request with parameters: name={}, address={}", name, address);
+
             if (areParametersValid(name, address))
             {
                 List<VenueDto> result;
@@ -66,11 +71,13 @@ public class VenueRoutesProvider implements RoutesProvider
                     result = venueDao.findVenues();
                 }
 
+                log.info("Responding with {} rows", result.size());
                 response.status(200);
                 return gson.toJson(result);
             }
             else
             {
+                log.error("Wrong combination of parameters");
                 response.status(400);
                 return """
                         {
@@ -84,14 +91,18 @@ public class VenueRoutesProvider implements RoutesProvider
     private void routeFindVenueById()
     {
         get("/:id", ((request, response) -> {
+            String id = request.params(":id");
+            log.info("Received GET /venues/{}", id);
+
             int venueId;
 
             try
             {
-                venueId = Integer.parseInt(request.params(":id"));
+                venueId = Integer.parseInt(id);
             }
             catch (NumberFormatException e)
             {
+                log.error("Invalid id format: {}", id);
                 response.status(400);
                 return """
                         {
@@ -104,11 +115,13 @@ public class VenueRoutesProvider implements RoutesProvider
 
             if (result.isPresent())
             {
+                log.info("Venue with id: {} found", id);
                 response.status(200);
                 return gson.toJson(result.get());
             }
             else
             {
+                log.info("Venue with id: {} not found", id);
                 response.status(404);
                 return """
                         {

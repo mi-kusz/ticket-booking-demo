@@ -5,10 +5,13 @@ import org.example.dao.TicketDao;
 import org.example.dto.TicketDto;
 import org.example.util.Util;
 import org.jooq.DSLContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static spark.Spark.get;
@@ -16,6 +19,7 @@ import static spark.Spark.path;
 
 public class TicketRoutesProvider implements RoutesProvider
 {
+    private static final Logger log = LoggerFactory.getLogger(TicketRoutesProvider.class);
     private final TicketDao ticketDao;
     private final Gson gson;
 
@@ -54,6 +58,8 @@ public class TicketRoutesProvider implements RoutesProvider
             String datetimeStart = request.queryParams("datetimeStart");
             String datetimeEnd = request.queryParams("datetimeEnd");
 
+            log.info("Received GET /tickets request with parameters: eventId={}, userId={}, datetimeStart={}, datetimeEnd={}", eventId, userId, datetimeStart, datetimeEnd);
+
             if (areParametersValid(eventId, userId, datetimeStart, datetimeEnd))
             {
                 List<TicketDto> result;
@@ -83,6 +89,7 @@ public class TicketRoutesProvider implements RoutesProvider
                 }
                 catch (NumberFormatException e)
                 {
+                    log.error("Invalid id format: {}", Objects.requireNonNullElse(eventId, userId));
                     response.status(400);
                     return """
                         {
@@ -92,6 +99,7 @@ public class TicketRoutesProvider implements RoutesProvider
                 }
                 catch (DateTimeParseException e)
                 {
+                    log.error("Cannot parse provided dates: {} and {}", datetimeStart, datetimeEnd, e);
                     response.status(400);
                     return """
                             {
@@ -100,11 +108,13 @@ public class TicketRoutesProvider implements RoutesProvider
                             """;
                 }
 
+                log.info("Responding with {} rows", result.size());
                 response.status(200);
                 return gson.toJson(result);
             }
             else
             {
+                log.error("Wrong combination of parameters");
                 response.status(400);
                 return """
                         {
@@ -118,14 +128,18 @@ public class TicketRoutesProvider implements RoutesProvider
     private void routeFindTicketById()
     {
         get("/:id", (request, response) -> {
+            String id = request.params(":id");
+            log.info("Received GET /tickets/{}", id);
+
             int ticketId;
 
             try
             {
-                ticketId = Integer.parseInt(request.params(":id"));
+                ticketId = Integer.parseInt(id);
             }
             catch (NumberFormatException e)
             {
+                log.error("Invalid id format: {}", id);
                 response.status(400);
                 return """
                         {
@@ -138,11 +152,13 @@ public class TicketRoutesProvider implements RoutesProvider
 
             if (result.isPresent())
             {
+                log.info("Ticket with id: {} found", id);
                 response.status(200);
                 return gson.toJson(result.get());
             }
             else
             {
+                log.info("Ticket with id: {} not found", id);
                 response.status(404);
                 return """
                         {

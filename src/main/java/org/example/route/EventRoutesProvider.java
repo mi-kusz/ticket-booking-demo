@@ -5,6 +5,8 @@ import org.example.dao.EventDao;
 import org.example.dto.EventDto;
 import org.example.util.Util;
 import org.jooq.DSLContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
@@ -16,6 +18,7 @@ import static spark.Spark.path;
 
 public class EventRoutesProvider implements RoutesProvider
 {
+    private static final Logger log = LoggerFactory.getLogger(EventRoutesProvider.class);
     private final EventDao eventDao;
     private final Gson gson;
 
@@ -52,6 +55,8 @@ public class EventRoutesProvider implements RoutesProvider
             String datetimeStart = request.queryParams("datetimeStart");
             String datetimeEnd = request.queryParams("datetimeEnd");
 
+            log.info("Received GET /events request with parameters: name={}, datetimeStart={}, datetimeEnd={}", name, datetimeStart, datetimeEnd);
+
             if (areParametersValid(name, datetimeStart, datetimeEnd))
             {
                 List<EventDto> result;
@@ -71,6 +76,8 @@ public class EventRoutesProvider implements RoutesProvider
                     }
                     catch (DateTimeParseException e)
                     {
+                        log.error("Cannot parse provided dates: {} and {}", datetimeStart, datetimeEnd, e);
+
                         response.status(400);
                         return """
                             {
@@ -84,11 +91,13 @@ public class EventRoutesProvider implements RoutesProvider
                     result = eventDao.findEvents();
                 }
 
+                log.info("Responding with {} rows", result.size());
                 response.status(200);
                 return gson.toJson(result);
             }
             else
             {
+                log.error("Wrong combination of parameters");
                 response.status(400);
                 return """
                         {
@@ -102,14 +111,18 @@ public class EventRoutesProvider implements RoutesProvider
     private void routeFindEventById()
     {
         get("/:id", ((request, response) -> {
+            String id = request.params(":id");
+            log.info("Received GET /events/{} request", id);
+
             int eventId;
 
             try
             {
-                eventId = Integer.parseInt(request.params(":id"));
+                eventId = Integer.parseInt(id);
             }
             catch (NumberFormatException e)
             {
+                log.error("Invalid id format: {}", id);
                 response.status(400);
                 return """
                         {
@@ -122,11 +135,13 @@ public class EventRoutesProvider implements RoutesProvider
 
             if (result.isPresent())
             {
+                log.info("Event with id: {} found", id);
                 response.status(200);
                 return gson.toJson(result.get());
             }
             else
             {
+                log.info("Event with id: {} not found", id);
                 response.status(404);
                 return """
                         {

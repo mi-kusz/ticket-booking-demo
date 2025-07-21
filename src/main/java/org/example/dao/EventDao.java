@@ -3,6 +3,8 @@ package org.example.dao;
 import org.example.dto.EventDto;
 import org.jooq.DSLContext;
 import org.jooq.Record;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,6 +14,7 @@ import static org.example.jooq.generated.tables.Events.EVENTS;
 
 public class EventDao
 {
+    private static final Logger log = LoggerFactory.getLogger(EventDao.class);
     private final DSLContext dsl;
 
     public EventDao(DSLContext dsl)
@@ -21,6 +24,8 @@ public class EventDao
 
     public List<EventDto> findEvents()
     {
+        log.info("Fetching all events");
+
         return dsl.selectFrom(EVENTS)
                 .fetch()
                 .map(this::toDto);
@@ -28,6 +33,8 @@ public class EventDao
 
     public Optional<EventDto> findEventById(int eventId)
     {
+        log.info("Fetching event with id: {}", eventId);
+
         Record eventRecord = dsl.selectFrom(EVENTS)
                 .where(EVENTS.EVENT_ID.eq(eventId))
                 .fetchOne();
@@ -38,6 +45,8 @@ public class EventDao
 
     public List<EventDto> findEventsByName(String name)
     {
+        log.info("Fetching events with name: {}", name);
+
         return dsl.selectFrom(EVENTS)
                 .where(EVENTS.NAME.eq(name))
                 .fetch()
@@ -46,6 +55,8 @@ public class EventDao
 
     public List<EventDto> findEventsByDateRange(LocalDateTime startTime, LocalDateTime endTime)
     {
+        log.info("Fetching events with date between {} and {}", startTime, endTime);
+
         return dsl.selectFrom(EVENTS)
                 .where(EVENTS.START_TIME.greaterOrEqual(startTime)
                                 .and(EVENTS.END_TIME.lessOrEqual(endTime))
@@ -56,6 +67,8 @@ public class EventDao
 
     public int addEvent(EventDto eventDto)
     {
+        log.info("Adding event");
+
         return dsl.insertInto(EVENTS, EVENTS.VENUE_ID, EVENTS.NAME, EVENTS.START_TIME, EVENTS.END_TIME)
                 .values(eventDto.venueId(), eventDto.name(), eventDto.startTime(), eventDto.endTime())
                 .execute();
@@ -63,6 +76,8 @@ public class EventDao
 
     public int modifyEvent(EventDto eventDto)
     {
+        log.info("Modifying event with id: {}", eventDto.eventId());
+
         return dsl.update(EVENTS)
                 .set(EVENTS.NAME, eventDto.name())
                 .set(EVENTS.START_TIME, eventDto.startTime())
