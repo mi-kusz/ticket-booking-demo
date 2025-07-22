@@ -41,6 +41,36 @@ public class TicketDaoTest
     }
 
     @Test
+    public void testFindTickets()
+    {
+        TicketDto ticket = testTicket();
+
+        MockDataProvider dataProvider = ctx -> {
+            Record record = DSL.using(SQLDialect.POSTGRES).newRecord(TICKETS.fields());
+
+            record.set(TICKETS.TICKET_ID, ticket.ticketId());
+            record.set(TICKETS.EVENT_ID, ticket.eventId());
+            record.set(TICKETS.SEAT_ID, ticket.seatId());
+            record.set(TICKETS.USER_ID, ticket.userId());
+            record.set(TICKETS.BOOKED_AT, ticket.bookedAt());
+
+            Result<Record> result = DSL.using(SQLDialect.POSTGRES).newResult(TICKETS.fields());
+            result.add(record);
+
+            return new MockResult[] {new MockResult(1, result)};
+        };
+
+        TicketDao ticketDao = new TicketDao(dslFor(dataProvider));
+        List<TicketDto> resultList = ticketDao.findTickets();
+
+        assertEquals(1, resultList.size());
+
+        TicketDto result = resultList.getFirst();
+
+        assertEqualTicket(ticket, result);
+    }
+
+    @Test
     public void testFindTicketById()
     {
         TicketDto ticket = testTicket();

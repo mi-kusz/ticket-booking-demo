@@ -40,6 +40,35 @@ public class UserDaoTest
     }
 
     @Test
+    public void testFindUsers()
+    {
+        UserDto user = testUser();
+
+        MockDataProvider dataProvider = ctx -> {
+            Record record = DSL.using(SQLDialect.POSTGRES).newRecord(USERS.fields());
+
+            record.set(USERS.USER_ID, user.userId());
+            record.set(USERS.NAME, user.name());
+            record.set(USERS.EMAIL, user.email());
+            record.set(USERS.CREATED_AT, user.createdAt());
+
+            Result<Record> result = DSL.using(SQLDialect.POSTGRES).newResult(USERS.fields());
+            result.add(record);
+
+            return new MockResult[] {new MockResult(1, result)};
+        };
+
+        UserDao userDao = new UserDao(dslFor(dataProvider));
+        List<UserDto> resultList = userDao.findUsers();
+
+        assertEquals(1, resultList.size());
+
+        UserDto result = resultList.getFirst();
+
+        assertEqualUser(user, result);
+    }
+
+    @Test
     public void testFindUserById()
     {
         UserDto user = testUser();

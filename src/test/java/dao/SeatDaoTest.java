@@ -39,6 +39,35 @@ public class SeatDaoTest
     }
 
     @Test
+    public void testFindSeats()
+    {
+        SeatDto seat = testSeat();
+
+        MockDataProvider dataProvider = ctx -> {
+            Record record = DSL.using(SQLDialect.POSTGRES).newRecord(SEATS.fields());
+
+            record.set(SEATS.SEAT_ID, seat.seatId());
+            record.set(SEATS.VENUE_ID, seat.venueId());
+            record.set(SEATS.SEAT_ROW, seat.seatRow());
+            record.set(SEATS.SEAT_NUMBER, seat.seatNumber());
+
+            Result<Record> result = DSL.using(SQLDialect.POSTGRES).newResult(SEATS.fields());
+            result.add(record);
+
+            return new MockResult[] {new MockResult(1, result)};
+        };
+
+        SeatDao seatDao = new SeatDao(dslFor(dataProvider));
+        List<SeatDto> resultList = seatDao.findSeats();
+
+        assertEquals(1, resultList.size());
+
+        SeatDto result = resultList.getFirst();
+
+        assertEqualSeat(seat, result);
+    }
+
+    @Test
     public void testFindSeatById()
     {
         SeatDto seat = testSeat();

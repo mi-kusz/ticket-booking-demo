@@ -38,6 +38,34 @@ public class VenueDaoTest
     }
 
     @Test
+    public void testFindVenues()
+    {
+        VenueDto venue = testVenue();
+
+        MockDataProvider dataProvider = ctx -> {
+            Record record = DSL.using(SQLDialect.POSTGRES).newRecord(VENUES.fields());
+
+            record.set(VENUES.VENUE_ID, venue.venueId());
+            record.set(VENUES.NAME, venue.name());
+            record.set(VENUES.ADDRESS, venue.address());
+
+            Result<Record> result = DSL.using(SQLDialect.POSTGRES).newResult(VENUES.fields());
+            result.add(record);
+
+            return new MockResult[] {new MockResult(1, result)};
+        };
+
+        VenueDao venueDao = new VenueDao(dslFor(dataProvider));
+        List<VenueDto> resultList = venueDao.findVenues();
+
+        assertEquals(1, resultList.size());
+
+        VenueDto result = resultList.getFirst();
+
+        assertEqualVenue(venue, result);
+    }
+
+    @Test
     public void testFindVenueById()
     {
         VenueDto venue = testVenue();

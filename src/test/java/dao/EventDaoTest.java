@@ -41,6 +41,36 @@ public class EventDaoTest
     }
 
     @Test
+    public void testFindEvents()
+    {
+        EventDto event = testEvent();
+
+        MockDataProvider dataProvider = ctx -> {
+            Record record = DSL.using(SQLDialect.POSTGRES).newRecord(EVENTS.fields());
+
+            record.set(EVENTS.EVENT_ID, event.eventId());
+            record.set(EVENTS.VENUE_ID, event.venueId());
+            record.set(EVENTS.NAME, event.name());
+            record.set(EVENTS.START_TIME, event.startTime());
+            record.set(EVENTS.END_TIME, event.endTime());
+
+            Result<Record> result = DSL.using(SQLDialect.POSTGRES).newResult(EVENTS.fields());
+            result.add(record);
+
+            return new MockResult[] {new MockResult(1, result)};
+        };
+
+        EventDao eventDao = new EventDao(dslFor(dataProvider));
+        List<EventDto> listResult = eventDao.findEvents();
+
+        assertEquals(1, listResult.size());
+
+        EventDto result = listResult.getFirst();
+
+        assertEqualEvent(event, result);
+    }
+
+    @Test
     public void testFindEventById()
     {
         EventDto event = testEvent();
