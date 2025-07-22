@@ -1,6 +1,7 @@
 package org.example.route;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import org.example.dao.VenueDao;
 import org.example.dto.VenueDto;
 import org.example.util.Util;
@@ -11,8 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Optional;
 
-import static spark.Spark.get;
-import static spark.Spark.path;
+import static spark.Spark.*;
 
 public class VenueRoutesProvider implements RoutesProvider
 {
@@ -32,6 +32,8 @@ public class VenueRoutesProvider implements RoutesProvider
         path("/venues", () -> {
             findVenues();
             routeFindVenueById();
+            routeAddVenue();
+            routeModifyVenue();
         });
     }
 
@@ -130,5 +132,75 @@ public class VenueRoutesProvider implements RoutesProvider
                         """;
             }
         }));
+    }
+
+    private void routeAddVenue()
+    {
+        post("", (request, response) -> {
+            VenueDto venueDto;
+
+            try
+            {
+                venueDto = gson.fromJson(request.body(), VenueDto.class);
+            }
+            catch (JsonSyntaxException e)
+            {
+                log.error("Wrong structure of VenueDto JSON");
+                response.status(400);
+                return """
+                            "error": "Cannot parse JSON"
+                        """;
+            }
+
+            int affected = venueDao.addVenue(venueDto);
+
+            if (affected == 1)
+            {
+                log.info("Venue added to database");
+                response.status(200);
+            }
+            else
+            {
+                log.error("Venue cannot be added to database");
+                response.status(400);
+            }
+
+            return gson.toJson(venueDto);
+        });
+    }
+
+    private void routeModifyVenue()
+    {
+        put("", (request, response) -> {
+            VenueDto venueDto;
+
+            try
+            {
+                venueDto = gson.fromJson(request.body(), VenueDto.class);
+            }
+            catch (JsonSyntaxException e)
+            {
+                log.error("Wrong structure of VenueDto JSON");
+                response.status(400);
+                return """
+                            "error": "Cannot parse JSON"
+                        """;
+            }
+
+            int affected = venueDao.modifyVenue(venueDto);
+
+            if (affected == 1)
+            {
+                log.info("Venue modified");
+                response.status(200);
+            }
+            else
+            {
+                log.error("Venue cannot be modified");
+                response.status(400);
+            }
+
+            return gson.toJson(venueDto);
+        });
     }
 }

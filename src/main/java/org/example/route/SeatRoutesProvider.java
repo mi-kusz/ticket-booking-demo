@@ -1,6 +1,7 @@
 package org.example.route;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import org.example.dao.SeatDao;
 import org.example.dto.SeatDto;
 import org.example.util.Util;
@@ -11,8 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Optional;
 
-import static spark.Spark.get;
-import static spark.Spark.path;
+import static spark.Spark.*;
 
 public class SeatRoutesProvider implements RoutesProvider
 {
@@ -32,6 +32,8 @@ public class SeatRoutesProvider implements RoutesProvider
         path("/seats", () -> {
             routeFindSeats();
             routeFindSeatById();
+            routeAddSeat();
+            routeModifySeat();
         });
     }
 
@@ -151,5 +153,75 @@ public class SeatRoutesProvider implements RoutesProvider
                         """;
             }
         }));
+    }
+
+    private void routeAddSeat()
+    {
+        post("", (request, response) ->  {
+            SeatDto seatDto;
+
+            try
+            {
+                seatDto = gson.fromJson(request.body(), SeatDto.class);
+            }
+            catch (JsonSyntaxException e)
+            {
+                log.error("Wrong structure of SeatDto JSON");
+                response.status(400);
+                return """
+                            "error": "Cannot parse JSON"
+                        """;
+            }
+
+            int affected = seatDao.addSeat(seatDto);
+
+            if (affected == 1)
+            {
+                log.info("Seat added to database");
+                response.status(200);
+            }
+            else
+            {
+                log.error("Seat cannot be added to database");
+                response.status(400);
+            }
+
+            return gson.toJson(seatDto);
+        });
+    }
+
+    private void routeModifySeat()
+    {
+        put("", (request, response) ->  {
+            SeatDto seatDto;
+
+            try
+            {
+                seatDto = gson.fromJson(request.body(), SeatDto.class);
+            }
+            catch (JsonSyntaxException e)
+            {
+                log.error("Wrong structure of SeatDto JSON");
+                response.status(400);
+                return """
+                            "error": "Cannot parse JSON"
+                        """;
+            }
+
+            int affected = seatDao.modifySeat(seatDto);
+
+            if (affected == 1)
+            {
+                log.info("Seat modified");
+                response.status(200);
+            }
+            else
+            {
+                log.error("Seat cannot be modified");
+                response.status(400);
+            }
+
+            return gson.toJson(seatDto);
+        });
     }
 }

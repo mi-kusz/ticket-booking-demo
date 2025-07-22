@@ -36,6 +36,7 @@ public class UserRoutesProvider implements RoutesProvider
             routeFindUserById();
             routeFindUserByEmail();
             routeAddUser();
+            routeModifyUser();
         });
     }
 
@@ -208,6 +209,42 @@ public class UserRoutesProvider implements RoutesProvider
             else
             {
                 log.error("User cannot be added to database");
+                response.status(400);
+            }
+
+            return gson.toJson(userDto);
+        });
+    }
+
+
+    private void routeModifyUser()
+    {
+        put("", (request, response) -> {
+            UserDto userDto;
+
+            try
+            {
+                userDto = gson.fromJson(request.body(), UserDto.class);
+            }
+            catch (JsonSyntaxException e)
+            {
+                log.error("Wrong structure of UserDto JSON");
+                response.status(400);
+                return """
+                            "error": "Cannot parse JSON"
+                        """;
+            }
+
+            int affected = userDao.modifyUser(userDto);
+
+            if (affected == 1)
+            {
+                log.info("User modified");
+                response.status(200);
+            }
+            else
+            {
+                log.error("User cannot be modified");
                 response.status(400);
             }
 

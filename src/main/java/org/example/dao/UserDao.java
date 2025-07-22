@@ -3,6 +3,7 @@ package org.example.dao;
 import org.example.dto.UserDto;
 import org.jooq.DSLContext;
 import org.jooq.Record;
+import org.jooq.exception.DataAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,20 +80,36 @@ public class UserDao
     {
         log.info("Adding user");
 
-        return dsl.insertInto(USERS, USERS.NAME, USERS.EMAIL, USERS.CREATED_AT)
-                .values(userDto.name(), userDto.email(), userDto.createdAt())
-                .execute();
+        try
+        {
+            return dsl.insertInto(USERS, USERS.NAME, USERS.EMAIL, USERS.CREATED_AT)
+                    .values(userDto.name(), userDto.email(), userDto.createdAt())
+                    .execute();
+        }
+        catch (DataAccessException e)
+        {
+            log.error("Cannot add user", e);
+            return 0;
+        }
     }
 
     public int modifyUser(UserDto userDto)
     {
         log.info("Modifying user with id: {}", userDto.userId());
 
-        return dsl.update(USERS)
-                .set(USERS.NAME, userDto.name())
-                .set(USERS.EMAIL, userDto.email())
-                .where(USERS.USER_ID.eq(userDto.userId()))
-                .execute();
+        try
+        {
+            return dsl.update(USERS)
+                    .set(USERS.NAME, userDto.name())
+                    .set(USERS.EMAIL, userDto.email())
+                    .where(USERS.USER_ID.eq(userDto.userId()))
+                    .execute();
+        }
+        catch (DataAccessException e)
+        {
+            log.error("Cannot modify user", e);
+            return 0;
+        }
     }
 
     private UserDto toDto(Record r)

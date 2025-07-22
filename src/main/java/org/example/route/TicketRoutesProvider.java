@@ -1,6 +1,7 @@
 package org.example.route;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import org.example.dao.TicketDao;
 import org.example.dto.TicketDto;
 import org.example.util.Util;
@@ -14,8 +15,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import static spark.Spark.get;
-import static spark.Spark.path;
+import static spark.Spark.*;
 
 public class TicketRoutesProvider implements RoutesProvider
 {
@@ -35,6 +35,8 @@ public class TicketRoutesProvider implements RoutesProvider
         path("/tickets", () -> {
             routeFindTicket();
             routeFindTicketById();
+            routeAddTicket();
+            routeModifyTicket();
         });
     }
 
@@ -166,6 +168,76 @@ public class TicketRoutesProvider implements RoutesProvider
                         }
                         """;
             }
+        });
+    }
+
+    private void routeAddTicket()
+    {
+        post("", (request, response) -> {
+            TicketDto ticketDto;
+
+            try
+            {
+                ticketDto = gson.fromJson(request.body(), TicketDto.class);
+            }
+            catch (JsonSyntaxException e)
+            {
+                log.error("Wrong structure of TicketDto JSON");
+                response.status(400);
+                return """
+                            "error": "Cannot parse JSON"
+                        """;
+            }
+
+            int affected = ticketDao.addTicket(ticketDto);
+
+            if (affected == 1)
+            {
+                log.info("Ticket added to database");
+                response.status(200);
+            }
+            else
+            {
+                log.error("Ticket cannot be added to database");
+                response.status(400);
+            }
+
+            return gson.toJson(ticketDto);
+        });
+    }
+
+    private void routeModifyTicket()
+    {
+        put("", (request, response) -> {
+            TicketDto ticketDto;
+
+            try
+            {
+                ticketDto = gson.fromJson(request.body(), TicketDto.class);
+            }
+            catch (JsonSyntaxException e)
+            {
+                log.error("Wrong structure of TicketDto JSON");
+                response.status(400);
+                return """
+                            "error": "Cannot parse JSON"
+                        """;
+            }
+
+            int affected = ticketDao.modifyTicket(ticketDto);
+
+            if (affected == 1)
+            {
+                log.info("Ticket modified");
+                response.status(200);
+            }
+            else
+            {
+                log.error("Ticket cannot be modified");
+                response.status(400);
+            }
+
+            return gson.toJson(ticketDto);
         });
     }
 }

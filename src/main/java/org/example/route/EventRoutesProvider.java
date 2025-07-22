@@ -1,6 +1,7 @@
 package org.example.route;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import org.example.dao.EventDao;
 import org.example.dto.EventDto;
 import org.example.util.Util;
@@ -13,8 +14,7 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
 
-import static spark.Spark.get;
-import static spark.Spark.path;
+import static spark.Spark.*;
 
 public class EventRoutesProvider implements RoutesProvider
 {
@@ -34,6 +34,8 @@ public class EventRoutesProvider implements RoutesProvider
         path("/events", () -> {
             routeFindEvents();
             routeFindEventById();
+            routeAddEvent();
+            routeModifyEvent();
         });
     }
 
@@ -150,5 +152,75 @@ public class EventRoutesProvider implements RoutesProvider
                         """;
             }
         }));
+    }
+
+    private void routeAddEvent()
+    {
+        post("", (request, response) -> {
+            EventDto eventDto;
+
+            try
+            {
+                eventDto = gson.fromJson(request.body(), EventDto.class);
+            }
+            catch (JsonSyntaxException e)
+            {
+                log.error("Wrong structure of EventDto JSON");
+                response.status(400);
+                return """
+                            "error": "Cannot parse JSON"
+                        """;
+            }
+
+            int affected = eventDao.addEvent(eventDto);
+
+            if (affected == 1)
+            {
+                log.info("Event added to database");
+                response.status(200);
+            }
+            else
+            {
+                log.error("Event cannot be added to database");
+                response.status(400);
+            }
+
+            return gson.toJson(eventDto);
+        });
+    }
+
+    private void routeModifyEvent()
+    {
+        put("", (request, response) -> {
+            EventDto eventDto;
+
+            try
+            {
+                eventDto = gson.fromJson(request.body(), EventDto.class);
+            }
+            catch (JsonSyntaxException e)
+            {
+                log.error("Wrong structure of EventDto JSON");
+                response.status(400);
+                return """
+                            "error": "Cannot parse JSON"
+                        """;
+            }
+
+            int affected = eventDao.modifyEvent(eventDto);
+
+            if (affected == 1)
+            {
+                log.info("Event modified");
+                response.status(200);
+            }
+            else
+            {
+                log.error("Event cannot be modified");
+                response.status(400);
+            }
+
+            return gson.toJson(eventDto);
+        });
     }
 }

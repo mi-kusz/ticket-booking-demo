@@ -3,12 +3,14 @@ package org.example.dao;
 import org.example.dto.VenueDto;
 import org.jooq.DSLContext;
 import org.jooq.Record;
+import org.jooq.exception.DataAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
 
+import static org.example.jooq.generated.tables.Users.USERS;
 import static org.example.jooq.generated.tables.Venues.VENUES;
 
 public class VenueDao
@@ -76,20 +78,36 @@ public class VenueDao
     {
         log.info("Adding venue");
 
-        return dsl.insertInto(VENUES, VENUES.NAME, VENUES.ADDRESS)
-                .values(venueDto.name(), venueDto.address())
-                .execute();
+        try
+        {
+            return dsl.insertInto(VENUES, VENUES.NAME, VENUES.ADDRESS)
+                    .values(venueDto.name(), venueDto.address())
+                    .execute();
+        }
+        catch (DataAccessException e)
+        {
+            log.error("Cannot add venue", e);
+            return 0;
+        }
     }
 
     public int modifyVenue(VenueDto venueDto)
     {
         log.info("Modifying venue with id: {}", venueDto.venueId());
 
-        return dsl.update(VENUES)
-                .set(VENUES.NAME, venueDto.name())
-                .set(VENUES.ADDRESS, venueDto.address())
-                .where(VENUES.VENUE_ID.eq(venueDto.venueId()))
-                .execute();
+        try
+        {
+            return dsl.update(VENUES)
+                    .set(VENUES.NAME, venueDto.name())
+                    .set(VENUES.ADDRESS, venueDto.address())
+                    .where(VENUES.VENUE_ID.eq(venueDto.venueId()))
+                    .execute();
+        }
+        catch (DataAccessException e)
+        {
+            log.error("Cannot modify venue", e);
+            return 0;
+        }
     }
 
     private VenueDto toDto(Record r)

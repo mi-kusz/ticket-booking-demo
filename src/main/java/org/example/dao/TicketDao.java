@@ -3,6 +3,7 @@ package org.example.dao;
 import org.example.dto.TicketDto;
 import org.jooq.DSLContext;
 import org.jooq.Record;
+import org.jooq.exception.DataAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.example.jooq.generated.tables.Tickets.TICKETS;
+import static org.example.jooq.generated.tables.Venues.VENUES;
 
 public class TicketDao
 {
@@ -77,22 +79,38 @@ public class TicketDao
     {
         log.info("Adding ticket");
 
-        return dsl.insertInto(TICKETS, TICKETS.EVENT_ID, TICKETS.SEAT_ID, TICKETS.USER_ID, TICKETS.BOOKED_AT)
-                .values(ticketDto.eventId(), ticketDto.seatId(), ticketDto.userId(), ticketDto.bookedAt())
-                .execute();
+        try
+        {
+            return dsl.insertInto(TICKETS, TICKETS.EVENT_ID, TICKETS.SEAT_ID, TICKETS.USER_ID, TICKETS.BOOKED_AT)
+                    .values(ticketDto.eventId(), ticketDto.seatId(), ticketDto.userId(), ticketDto.bookedAt())
+                    .execute();
+        }
+        catch (DataAccessException e)
+        {
+            log.error("Cannot add ticket", e);
+            return 0;
+        }
     }
 
     public int modifyTicket(TicketDto ticketDto)
     {
         log.info("Modifying ticket with id: {}", ticketDto.ticketId());
 
-        return dsl.update(TICKETS)
-                .set(TICKETS.EVENT_ID, ticketDto.eventId())
-                .set(TICKETS.SEAT_ID, ticketDto.seatId())
-                .set(TICKETS.USER_ID, ticketDto.userId())
-                .set(TICKETS.BOOKED_AT, ticketDto.bookedAt())
-                .where(TICKETS.TICKET_ID.eq(ticketDto.ticketId()))
-                .execute();
+        try
+        {
+            return dsl.update(TICKETS)
+                    .set(TICKETS.EVENT_ID, ticketDto.eventId())
+                    .set(TICKETS.SEAT_ID, ticketDto.seatId())
+                    .set(TICKETS.USER_ID, ticketDto.userId())
+                    .set(TICKETS.BOOKED_AT, ticketDto.bookedAt())
+                    .where(TICKETS.TICKET_ID.eq(ticketDto.ticketId()))
+                    .execute();
+        }
+        catch (DataAccessException e)
+        {
+            log.error("Cannot modify ticket", e);
+            return 0;
+        }
     }
 
     private TicketDto toDto(Record r)

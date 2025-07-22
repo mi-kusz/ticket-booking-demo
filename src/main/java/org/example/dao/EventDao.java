@@ -3,6 +3,7 @@ package org.example.dao;
 import org.example.dto.EventDto;
 import org.jooq.DSLContext;
 import org.jooq.Record;
+import org.jooq.exception.DataAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.example.jooq.generated.tables.Events.EVENTS;
+import static org.example.jooq.generated.tables.Seats.SEATS;
 
 public class EventDao
 {
@@ -69,20 +71,36 @@ public class EventDao
     {
         log.info("Adding event");
 
-        return dsl.insertInto(EVENTS, EVENTS.VENUE_ID, EVENTS.NAME, EVENTS.START_TIME, EVENTS.END_TIME)
-                .values(eventDto.venueId(), eventDto.name(), eventDto.startTime(), eventDto.endTime())
-                .execute();
+        try
+        {
+            return dsl.insertInto(EVENTS, EVENTS.VENUE_ID, EVENTS.NAME, EVENTS.START_TIME, EVENTS.END_TIME)
+                    .values(eventDto.venueId(), eventDto.name(), eventDto.startTime(), eventDto.endTime())
+                    .execute();
+        }
+        catch (DataAccessException e)
+        {
+            log.error("Cannot add event", e);
+            return 0;
+        }
     }
 
     public int modifyEvent(EventDto eventDto)
     {
         log.info("Modifying event with id: {}", eventDto.eventId());
 
-        return dsl.update(EVENTS)
-                .set(EVENTS.NAME, eventDto.name())
-                .set(EVENTS.START_TIME, eventDto.startTime())
-                .set(EVENTS.END_TIME, eventDto.endTime())
-                .where(EVENTS.EVENT_ID.eq(eventDto.eventId())).execute();
+        try
+        {
+            return dsl.update(EVENTS)
+                    .set(EVENTS.NAME, eventDto.name())
+                    .set(EVENTS.START_TIME, eventDto.startTime())
+                    .set(EVENTS.END_TIME, eventDto.endTime())
+                    .where(EVENTS.EVENT_ID.eq(eventDto.eventId())).execute();
+        }
+        catch (DataAccessException e)
+        {
+            log.error("Cannot modify event", e);
+            return 0;
+        }
     }
 
     private EventDto toDto(Record r)

@@ -3,6 +3,7 @@ package org.example.dao;
 import org.example.dto.SeatDto;
 import org.jooq.DSLContext;
 import org.jooq.Record;
+import org.jooq.exception.DataAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.example.jooq.generated.tables.Seats.SEATS;
+import static org.example.jooq.generated.tables.Tickets.TICKETS;
 
 public class SeatDao
 {
@@ -66,21 +68,37 @@ public class SeatDao
     {
         log.info("Adding seat");
 
-        return dsl.insertInto(SEATS, SEATS.VENUE_ID, SEATS.SEAT_ROW, SEATS.SEAT_NUMBER)
-                .values(seatDto.venueId(), seatDto.seatRow(), seatDto.seatNumber())
-                .execute();
+        try
+        {
+            return dsl.insertInto(SEATS, SEATS.VENUE_ID, SEATS.SEAT_ROW, SEATS.SEAT_NUMBER)
+                    .values(seatDto.venueId(), seatDto.seatRow(), seatDto.seatNumber())
+                    .execute();
+        }
+        catch (DataAccessException e)
+        {
+            log.error("Cannot add seat", e);
+            return 0;
+        }
     }
 
     public int modifySeat(SeatDto seatDto)
     {
         log.info("Modifying seat with id: {}", seatDto.seatId());
 
-        return dsl.update(SEATS)
-                .set(SEATS.VENUE_ID, seatDto.venueId())
-                .set(SEATS.SEAT_ROW, seatDto.seatRow())
-                .set(SEATS.SEAT_NUMBER, seatDto.seatNumber())
-                .where(SEATS.SEAT_ID.eq(seatDto.seatId()))
-                .execute();
+        try
+        {
+            return dsl.update(SEATS)
+                    .set(SEATS.VENUE_ID, seatDto.venueId())
+                    .set(SEATS.SEAT_ROW, seatDto.seatRow())
+                    .set(SEATS.SEAT_NUMBER, seatDto.seatNumber())
+                    .where(SEATS.SEAT_ID.eq(seatDto.seatId()))
+                    .execute();
+        }
+        catch (DataAccessException e)
+        {
+            log.error("Cannot modify seat", e);
+            return 0;
+        }
     }
 
     private SeatDto toDto(Record r)
