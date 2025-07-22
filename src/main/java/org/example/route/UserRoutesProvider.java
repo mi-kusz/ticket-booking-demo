@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import org.example.dao.UserDao;
 import org.example.dto.UserDto;
+import org.example.util.ErrorMessages;
 import org.example.util.Util;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
@@ -82,11 +83,7 @@ public class UserRoutesProvider implements RoutesProvider
                         log.error("Cannot parse provided dates: {} and {}", datetimeStart, datetimeEnd, e);
 
                         response.status(400);
-                        return """
-                            {
-                                "error": "Invalid datetime format"
-                            }
-                            """;
+                        return ErrorMessages.INVALID_DATETIME;
                     }
                 }
                 else
@@ -102,11 +99,7 @@ public class UserRoutesProvider implements RoutesProvider
             {
                 log.error("Wrong combination of parameters");
                 response.status(400);
-                return """
-                        {
-                            "error": "Invalid combination of parameters"
-                        }
-                        """;
+                return ErrorMessages.INVALID_PARAMETERS;
             }
         });
     }
@@ -127,11 +120,7 @@ public class UserRoutesProvider implements RoutesProvider
             {
                 log.error("Invalid id format: {}", id);
                 response.status(400);
-                return """
-                        {
-                            "error": "Invalid id format. Must be an integer"
-                        }
-                        """;
+                return ErrorMessages.INVALID_ID;
             }
             Optional<UserDto> result = userDao.findUserById(userId);
 
@@ -172,11 +161,7 @@ public class UserRoutesProvider implements RoutesProvider
             {
                 log.info("User with email: {} not found", email);
                 response.status(404);
-                return """
-                        {
-                            "error": "User not found"
-                        }
-                        """;
+                return ErrorMessages.notFound("User");
             }
         });
     }
@@ -194,9 +179,7 @@ public class UserRoutesProvider implements RoutesProvider
             {
                 log.error("Wrong structure of UserDto JSON");
                 response.status(400);
-                return """
-                            "error": "Cannot parse JSON"
-                        """;
+                return ErrorMessages.JSON_PARSE_ERROR;
             }
 
             int affected = userDao.addUser(userDto);
@@ -230,9 +213,7 @@ public class UserRoutesProvider implements RoutesProvider
             {
                 log.error("Wrong structure of UserDto JSON");
                 response.status(400);
-                return """
-                            "error": "Cannot parse JSON"
-                        """;
+                return ErrorMessages.JSON_PARSE_ERROR;
             }
 
             int affected = userDao.modifyUser(userDto);

@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import org.example.dao.VenueDao;
 import org.example.dto.VenueDto;
+import org.example.util.ErrorMessages;
 import org.example.util.Util;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
@@ -81,11 +82,7 @@ public class VenueRoutesProvider implements RoutesProvider
             {
                 log.error("Wrong combination of parameters");
                 response.status(400);
-                return """
-                        {
-                            "error": "Invalid combination of parameters"
-                        }
-                        """;
+                return ErrorMessages.INVALID_PARAMETERS;
             }
         }));
     }
@@ -106,11 +103,7 @@ public class VenueRoutesProvider implements RoutesProvider
             {
                 log.error("Invalid id format: {}", id);
                 response.status(400);
-                return """
-                        {
-                            "error": "Invalid id format. Must be an integer"
-                        }
-                        """;
+                return ErrorMessages.INVALID_ID;
             }
 
             Optional<VenueDto> result = venueDao.findVenueById(venueId);
@@ -125,11 +118,7 @@ public class VenueRoutesProvider implements RoutesProvider
             {
                 log.info("Venue with id: {} not found", id);
                 response.status(404);
-                return """
-                        {
-                            "error": "Venue not found"
-                        }
-                        """;
+                return ErrorMessages.notFound("Venue");
             }
         }));
     }
@@ -147,9 +136,7 @@ public class VenueRoutesProvider implements RoutesProvider
             {
                 log.error("Wrong structure of VenueDto JSON");
                 response.status(400);
-                return """
-                            "error": "Cannot parse JSON"
-                        """;
+                return ErrorMessages.JSON_PARSE_ERROR;
             }
 
             int affected = venueDao.addVenue(venueDto);
@@ -182,9 +169,7 @@ public class VenueRoutesProvider implements RoutesProvider
             {
                 log.error("Wrong structure of VenueDto JSON");
                 response.status(400);
-                return """
-                            "error": "Cannot parse JSON"
-                        """;
+                return ErrorMessages.JSON_PARSE_ERROR;
             }
 
             int affected = venueDao.modifyVenue(venueDto);

@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import org.example.dao.EventDao;
 import org.example.dto.EventDto;
+import org.example.util.ErrorMessages;
 import org.example.util.Util;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
@@ -81,11 +82,7 @@ public class EventRoutesProvider implements RoutesProvider
                         log.error("Cannot parse provided dates: {} and {}", datetimeStart, datetimeEnd, e);
 
                         response.status(400);
-                        return """
-                            {
-                                "error": "Invalid datetime format"
-                            }
-                            """;
+                        return ErrorMessages.INVALID_DATETIME;
                     }
                 }
                 else
@@ -101,11 +98,7 @@ public class EventRoutesProvider implements RoutesProvider
             {
                 log.error("Wrong combination of parameters");
                 response.status(400);
-                return """
-                        {
-                            "error": "Invalid combination of parameters"
-                        }
-                        """;
+                return ErrorMessages.INVALID_PARAMETERS;
             }
         });
     }
@@ -126,11 +119,7 @@ public class EventRoutesProvider implements RoutesProvider
             {
                 log.error("Invalid id format: {}", id);
                 response.status(400);
-                return """
-                        {
-                            "error": "Invalid id format. Must be an integer"
-                        }
-                        """;
+                return ErrorMessages.INVALID_ID;
             }
 
             Optional<EventDto> result = eventDao.findEventById(eventId);
@@ -145,11 +134,7 @@ public class EventRoutesProvider implements RoutesProvider
             {
                 log.info("Event with id: {} not found", id);
                 response.status(404);
-                return """
-                        {
-                            "error": "Event not found"
-                        }
-                        """;
+                return ErrorMessages.notFound("Event");
             }
         }));
     }
@@ -167,9 +152,7 @@ public class EventRoutesProvider implements RoutesProvider
             {
                 log.error("Wrong structure of EventDto JSON");
                 response.status(400);
-                return """
-                            "error": "Cannot parse JSON"
-                        """;
+                return ErrorMessages.JSON_PARSE_ERROR;
             }
 
             int affected = eventDao.addEvent(eventDto);
@@ -202,9 +185,7 @@ public class EventRoutesProvider implements RoutesProvider
             {
                 log.error("Wrong structure of EventDto JSON");
                 response.status(400);
-                return """
-                            "error": "Cannot parse JSON"
-                        """;
+                return ErrorMessages.JSON_PARSE_ERROR;
             }
 
             int affected = eventDao.modifyEvent(eventDto);

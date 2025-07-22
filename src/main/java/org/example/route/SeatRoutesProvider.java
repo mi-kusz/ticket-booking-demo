@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import org.example.dao.SeatDao;
 import org.example.dto.SeatDto;
+import org.example.util.ErrorMessages;
 import org.example.util.Util;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
@@ -72,11 +73,7 @@ public class SeatRoutesProvider implements RoutesProvider
                     {
                         log.error("Invalid id format: {}", venueId);
                         response.status(400);
-                        return """
-                        {
-                            "error": "Invalid id format. Must be an integer"
-                        }
-                        """;
+                        return ErrorMessages.INVALID_ID;
                     }
 
                     if (seatRow != null)
@@ -102,11 +99,7 @@ public class SeatRoutesProvider implements RoutesProvider
             {
                 log.error("Wrong combination of parameters");
                 response.status(400);
-                return """
-                        {
-                            "error": "Invalid combination of parameters"
-                        }
-                        """;
+                return ErrorMessages.INVALID_PARAMETERS;
             }
         }));
     }
@@ -127,11 +120,7 @@ public class SeatRoutesProvider implements RoutesProvider
             {
                 log.error("Invalid id format: {}", id);
                 response.status(400);
-                return """
-                        {
-                            "error": "Invalid id format. Must be an integer"
-                        }
-                        """;
+                return ErrorMessages.INVALID_ID;
             }
 
             Optional<SeatDto> result = seatDao.findSeatById(seatId);
@@ -146,11 +135,7 @@ public class SeatRoutesProvider implements RoutesProvider
             {
                 log.info("Seat with id: {} not found", id);
                 response.status(404);
-                return """
-                        {
-                            "error": "Seat not found"
-                        }
-                        """;
+                return ErrorMessages.notFound("Seat");
             }
         }));
     }
@@ -168,9 +153,7 @@ public class SeatRoutesProvider implements RoutesProvider
             {
                 log.error("Wrong structure of SeatDto JSON");
                 response.status(400);
-                return """
-                            "error": "Cannot parse JSON"
-                        """;
+                return ErrorMessages.JSON_PARSE_ERROR;
             }
 
             int affected = seatDao.addSeat(seatDto);
@@ -203,9 +186,7 @@ public class SeatRoutesProvider implements RoutesProvider
             {
                 log.error("Wrong structure of SeatDto JSON");
                 response.status(400);
-                return """
-                            "error": "Cannot parse JSON"
-                        """;
+                return ErrorMessages.JSON_PARSE_ERROR;
             }
 
             int affected = seatDao.modifySeat(seatDto);

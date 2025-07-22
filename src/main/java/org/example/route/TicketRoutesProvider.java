@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import org.example.dao.TicketDao;
 import org.example.dto.TicketDto;
+import org.example.util.ErrorMessages;
 import org.example.util.Util;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
@@ -93,21 +94,13 @@ public class TicketRoutesProvider implements RoutesProvider
                 {
                     log.error("Invalid id format: {}", Objects.requireNonNullElse(eventId, userId));
                     response.status(400);
-                    return """
-                        {
-                            "error": "Invalid id format. Must be an integer"
-                        }
-                        """;
+                    return ErrorMessages.INVALID_ID;
                 }
                 catch (DateTimeParseException e)
                 {
                     log.error("Cannot parse provided dates: {} and {}", datetimeStart, datetimeEnd, e);
                     response.status(400);
-                    return """
-                            {
-                                "error": "Invalid datetime format"
-                            }
-                            """;
+                    return ErrorMessages.INVALID_DATETIME;
                 }
 
                 log.info("Responding with {} rows", result.size());
@@ -118,11 +111,7 @@ public class TicketRoutesProvider implements RoutesProvider
             {
                 log.error("Wrong combination of parameters");
                 response.status(400);
-                return """
-                        {
-                            "error": "Invalid combination of parameters"
-                        }
-                        """;
+                return ErrorMessages.INVALID_PARAMETERS;
             }
         });
     }
@@ -143,11 +132,7 @@ public class TicketRoutesProvider implements RoutesProvider
             {
                 log.error("Invalid id format: {}", id);
                 response.status(400);
-                return """
-                        {
-                            "error": "Invalid id format. Must be an integer"
-                        }
-                        """;
+                return ErrorMessages.INVALID_ID;
             }
 
             Optional<TicketDto> result = ticketDao.findTicketById(ticketId);
@@ -162,11 +147,7 @@ public class TicketRoutesProvider implements RoutesProvider
             {
                 log.info("Ticket with id: {} not found", id);
                 response.status(404);
-                return """
-                        {
-                            "error": "Ticket not found"
-                        }
-                        """;
+                return ErrorMessages.notFound("Ticket");
             }
         });
     }
@@ -184,9 +165,7 @@ public class TicketRoutesProvider implements RoutesProvider
             {
                 log.error("Wrong structure of TicketDto JSON");
                 response.status(400);
-                return """
-                            "error": "Cannot parse JSON"
-                        """;
+                return ErrorMessages.JSON_PARSE_ERROR;
             }
 
             int affected = ticketDao.addTicket(ticketDto);
@@ -219,9 +198,7 @@ public class TicketRoutesProvider implements RoutesProvider
             {
                 log.error("Wrong structure of TicketDto JSON");
                 response.status(400);
-                return """
-                            "error": "Cannot parse JSON"
-                        """;
+                return ErrorMessages.JSON_PARSE_ERROR;
             }
 
             int affected = ticketDao.modifyTicket(ticketDto);
