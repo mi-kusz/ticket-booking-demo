@@ -5,6 +5,7 @@ import com.google.gson.JsonSyntaxException;
 import org.example.dao.SeatDao;
 import org.example.dto.SeatDto;
 import org.example.util.ErrorMessages;
+import org.example.util.LogHelper;
 import org.example.util.Util;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
@@ -55,7 +56,7 @@ public class SeatRoutesProvider implements RoutesProvider
             String venueId = request.queryParams("venueId");
             String seatRow = request.queryParams("seatRow");
 
-            log.info("Received GET /seats request with parameters: venueId={}, seatRow={}", venueId, seatRow);
+            LogHelper.logRequest(log, "GET", "/seats", venueId, seatRow);
 
             if (areParametersValid(venueId, seatRow))
             {
@@ -71,7 +72,7 @@ public class SeatRoutesProvider implements RoutesProvider
                     }
                     catch (NumberFormatException e)
                     {
-                        log.error("Invalid id format: {}", venueId);
+                        LogHelper.logInvalidId(log, venueId);
                         response.status(400);
                         return ErrorMessages.INVALID_ID;
                     }
@@ -83,7 +84,6 @@ public class SeatRoutesProvider implements RoutesProvider
                     else
                     {
                         result = seatDao.findSeatsByVenue(venue);
-
                     }
                 }
                 else
@@ -91,13 +91,13 @@ public class SeatRoutesProvider implements RoutesProvider
                     result = seatDao.findSeats();
                 }
 
-                log.info("Responding with {} rows", result.size());
+                LogHelper.logListResponse(log, result.size());
                 response.status(200);
                 return gson.toJson(result);
             }
             else
             {
-                log.error("Wrong combination of parameters");
+                LogHelper.logWrongParameters(log);
                 response.status(400);
                 return ErrorMessages.INVALID_PARAMETERS;
             }
@@ -108,7 +108,8 @@ public class SeatRoutesProvider implements RoutesProvider
     {
         get("/:id", ((request, response) -> {
             String id = request.params(":id");
-            log.info("Received GET /seats/{} request", id);
+
+            LogHelper.logRequest(log, "GET", "/seats/id", id);
 
             int seatId;
 
@@ -118,7 +119,7 @@ public class SeatRoutesProvider implements RoutesProvider
             }
             catch (NumberFormatException e)
             {
-                log.error("Invalid id format: {}", id);
+                LogHelper.logInvalidId(log, id);
                 response.status(400);
                 return ErrorMessages.INVALID_ID;
             }
@@ -127,13 +128,13 @@ public class SeatRoutesProvider implements RoutesProvider
 
             if (result.isPresent())
             {
-                log.info("Seat with id: {} found", id);
+                LogHelper.logIdFound(log, "Seat", id);
                 response.status(200);
                 return gson.toJson(result.get());
             }
             else
             {
-                log.info("Seat with id: {} not found", id);
+                LogHelper.logIdNotFound(log, "Seat", id);
                 response.status(404);
                 return ErrorMessages.notFound("Seat");
             }
@@ -145,13 +146,15 @@ public class SeatRoutesProvider implements RoutesProvider
         post("", (request, response) ->  {
             SeatDto seatDto;
 
+            LogHelper.logRequest(log, "POST", "/seats");
+
             try
             {
                 seatDto = gson.fromJson(request.body(), SeatDto.class);
             }
             catch (JsonSyntaxException e)
             {
-                log.error("Wrong structure of SeatDto JSON");
+                LogHelper.logWrongJson(log, "SeatDto");
                 response.status(400);
                 return ErrorMessages.JSON_PARSE_ERROR;
             }
@@ -160,11 +163,12 @@ public class SeatRoutesProvider implements RoutesProvider
 
             if (affected == 1)
             {
-                log.info("Seat added to database");
+                LogHelper.logEntityAdded(log, "Seat");
                 response.status(200);
             }
             else
             {
+                LogHelper.logEntityNotAdded(log, "Seat");
                 log.error("Seat cannot be added to database");
                 response.status(400);
             }
@@ -178,13 +182,15 @@ public class SeatRoutesProvider implements RoutesProvider
         put("", (request, response) ->  {
             SeatDto seatDto;
 
+            LogHelper.logRequest(log, "PUT", "/seats");
+
             try
             {
                 seatDto = gson.fromJson(request.body(), SeatDto.class);
             }
             catch (JsonSyntaxException e)
             {
-                log.error("Wrong structure of SeatDto JSON");
+                LogHelper.logWrongJson(log, "SeatDto");
                 response.status(400);
                 return ErrorMessages.JSON_PARSE_ERROR;
             }
@@ -193,12 +199,12 @@ public class SeatRoutesProvider implements RoutesProvider
 
             if (affected == 1)
             {
-                log.info("Seat modified");
+                LogHelper.logEntityUpdated(log, "Seat");
                 response.status(200);
             }
             else
             {
-                log.error("Seat cannot be modified");
+                LogHelper.logEntityNotUpdated(log, "Seat");
                 response.status(400);
             }
 

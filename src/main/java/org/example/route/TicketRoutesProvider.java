@@ -5,6 +5,7 @@ import com.google.gson.JsonSyntaxException;
 import org.example.dao.TicketDao;
 import org.example.dto.TicketDto;
 import org.example.util.ErrorMessages;
+import org.example.util.LogHelper;
 import org.example.util.Util;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
@@ -61,7 +62,7 @@ public class TicketRoutesProvider implements RoutesProvider
             String datetimeStart = request.queryParams("datetimeStart");
             String datetimeEnd = request.queryParams("datetimeEnd");
 
-            log.info("Received GET /tickets request with parameters: eventId={}, userId={}, datetimeStart={}, datetimeEnd={}", eventId, userId, datetimeStart, datetimeEnd);
+            LogHelper.logRequest(log, "GET", "/tickets", eventId, userId, datetimeStart, datetimeEnd);
 
             if (areParametersValid(eventId, userId, datetimeStart, datetimeEnd))
             {
@@ -92,24 +93,24 @@ public class TicketRoutesProvider implements RoutesProvider
                 }
                 catch (NumberFormatException e)
                 {
-                    log.error("Invalid id format: {}", Objects.requireNonNullElse(eventId, userId));
+                    LogHelper.logInvalidId(log, Objects.requireNonNullElse(eventId, userId));
                     response.status(400);
                     return ErrorMessages.INVALID_ID;
                 }
                 catch (DateTimeParseException e)
                 {
-                    log.error("Cannot parse provided dates: {} and {}", datetimeStart, datetimeEnd, e);
+                    LogHelper.logInvalidDates(log, datetimeStart, datetimeEnd);
                     response.status(400);
                     return ErrorMessages.INVALID_DATETIME;
                 }
 
-                log.info("Responding with {} rows", result.size());
+                LogHelper.logListResponse(log, result.size());
                 response.status(200);
                 return gson.toJson(result);
             }
             else
             {
-                log.error("Wrong combination of parameters");
+                LogHelper.logWrongParameters(log);
                 response.status(400);
                 return ErrorMessages.INVALID_PARAMETERS;
             }
@@ -120,7 +121,8 @@ public class TicketRoutesProvider implements RoutesProvider
     {
         get("/:id", (request, response) -> {
             String id = request.params(":id");
-            log.info("Received GET /tickets/{}", id);
+
+            LogHelper.logRequest(log, "GET", "/tickets/id", id);
 
             int ticketId;
 
@@ -130,7 +132,7 @@ public class TicketRoutesProvider implements RoutesProvider
             }
             catch (NumberFormatException e)
             {
-                log.error("Invalid id format: {}", id);
+                LogHelper.logInvalidId(log, id);
                 response.status(400);
                 return ErrorMessages.INVALID_ID;
             }
@@ -139,13 +141,13 @@ public class TicketRoutesProvider implements RoutesProvider
 
             if (result.isPresent())
             {
-                log.info("Ticket with id: {} found", id);
+                LogHelper.logIdFound(log, "Ticket", id);
                 response.status(200);
                 return gson.toJson(result.get());
             }
             else
             {
-                log.info("Ticket with id: {} not found", id);
+                LogHelper.logIdNotFound(log, "Ticket", id);
                 response.status(404);
                 return ErrorMessages.notFound("Ticket");
             }
@@ -157,13 +159,15 @@ public class TicketRoutesProvider implements RoutesProvider
         post("", (request, response) -> {
             TicketDto ticketDto;
 
+            LogHelper.logRequest(log, "POST", "/tickets");
+
             try
             {
                 ticketDto = gson.fromJson(request.body(), TicketDto.class);
             }
             catch (JsonSyntaxException e)
             {
-                log.error("Wrong structure of TicketDto JSON");
+                LogHelper.logWrongJson(log, "TicketDto");
                 response.status(400);
                 return ErrorMessages.JSON_PARSE_ERROR;
             }
@@ -172,12 +176,12 @@ public class TicketRoutesProvider implements RoutesProvider
 
             if (affected == 1)
             {
-                log.info("Ticket added to database");
+                LogHelper.logEntityAdded(log, "Ticket");
                 response.status(200);
             }
             else
             {
-                log.error("Ticket cannot be added to database");
+                LogHelper.logEntityNotAdded(log, "Ticket");
                 response.status(400);
             }
 
@@ -190,13 +194,15 @@ public class TicketRoutesProvider implements RoutesProvider
         put("", (request, response) -> {
             TicketDto ticketDto;
 
+            LogHelper.logRequest(log, "PUT", "/tickets");
+
             try
             {
                 ticketDto = gson.fromJson(request.body(), TicketDto.class);
             }
             catch (JsonSyntaxException e)
             {
-                log.error("Wrong structure of TicketDto JSON");
+                LogHelper.logWrongJson(log, "TicketDto");
                 response.status(400);
                 return ErrorMessages.JSON_PARSE_ERROR;
             }
@@ -205,12 +211,12 @@ public class TicketRoutesProvider implements RoutesProvider
 
             if (affected == 1)
             {
-                log.info("Ticket modified");
+                LogHelper.logEntityUpdated(log, "Ticket");
                 response.status(200);
             }
             else
             {
-                log.error("Ticket cannot be modified");
+                LogHelper.logEntityNotUpdated(log, "Ticket");
                 response.status(400);
             }
 

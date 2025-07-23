@@ -5,6 +5,7 @@ import com.google.gson.JsonSyntaxException;
 import org.example.dao.VenueDao;
 import org.example.dto.VenueDto;
 import org.example.util.ErrorMessages;
+import org.example.util.LogHelper;
 import org.example.util.Util;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
@@ -51,7 +52,7 @@ public class VenueRoutesProvider implements RoutesProvider
             String name = request.queryParams("name");
             String address = request.queryParams("address");
 
-            log.info("Received GET /venues request with parameters: name={}, address={}", name, address);
+            LogHelper.logRequest(log, "GET", "/venues", name, address);
 
             if (areParametersValid(name, address))
             {
@@ -74,13 +75,13 @@ public class VenueRoutesProvider implements RoutesProvider
                     result = venueDao.findVenues();
                 }
 
-                log.info("Responding with {} rows", result.size());
+                LogHelper.logListResponse(log, result.size());
                 response.status(200);
                 return gson.toJson(result);
             }
             else
             {
-                log.error("Wrong combination of parameters");
+                LogHelper.logWrongParameters(log);
                 response.status(400);
                 return ErrorMessages.INVALID_PARAMETERS;
             }
@@ -91,7 +92,8 @@ public class VenueRoutesProvider implements RoutesProvider
     {
         get("/:id", ((request, response) -> {
             String id = request.params(":id");
-            log.info("Received GET /venues/{}", id);
+
+            LogHelper.logRequest(log, "GET", "/venues/id", id);
 
             int venueId;
 
@@ -101,7 +103,7 @@ public class VenueRoutesProvider implements RoutesProvider
             }
             catch (NumberFormatException e)
             {
-                log.error("Invalid id format: {}", id);
+                LogHelper.logInvalidId(log, id);
                 response.status(400);
                 return ErrorMessages.INVALID_ID;
             }
@@ -110,13 +112,13 @@ public class VenueRoutesProvider implements RoutesProvider
 
             if (result.isPresent())
             {
-                log.info("Venue with id: {} found", id);
+                LogHelper.logIdFound(log, "Venue", id);
                 response.status(200);
                 return gson.toJson(result.get());
             }
             else
             {
-                log.info("Venue with id: {} not found", id);
+                LogHelper.logIdNotFound(log, "Venue", id);
                 response.status(404);
                 return ErrorMessages.notFound("Venue");
             }
@@ -128,13 +130,15 @@ public class VenueRoutesProvider implements RoutesProvider
         post("", (request, response) -> {
             VenueDto venueDto;
 
+            LogHelper.logRequest(log, "POST", "/venues");
+
             try
             {
                 venueDto = gson.fromJson(request.body(), VenueDto.class);
             }
             catch (JsonSyntaxException e)
             {
-                log.error("Wrong structure of VenueDto JSON");
+                LogHelper.logWrongJson(log, "VenueDto");
                 response.status(400);
                 return ErrorMessages.JSON_PARSE_ERROR;
             }
@@ -143,12 +147,12 @@ public class VenueRoutesProvider implements RoutesProvider
 
             if (affected == 1)
             {
-                log.info("Venue added to database");
+                LogHelper.logEntityAdded(log, "Venue");
                 response.status(200);
             }
             else
             {
-                log.error("Venue cannot be added to database");
+                LogHelper.logEntityNotAdded(log, "Venue");
                 response.status(400);
             }
 
@@ -161,13 +165,15 @@ public class VenueRoutesProvider implements RoutesProvider
         put("", (request, response) -> {
             VenueDto venueDto;
 
+            LogHelper.logRequest(log, "PUT", "/venues");
+
             try
             {
                 venueDto = gson.fromJson(request.body(), VenueDto.class);
             }
             catch (JsonSyntaxException e)
             {
-                log.error("Wrong structure of VenueDto JSON");
+                LogHelper.logWrongJson(log, "VenueDto");
                 response.status(400);
                 return ErrorMessages.JSON_PARSE_ERROR;
             }
@@ -176,12 +182,12 @@ public class VenueRoutesProvider implements RoutesProvider
 
             if (affected == 1)
             {
-                log.info("Venue modified");
+                LogHelper.logEntityUpdated(log, "Venue");
                 response.status(200);
             }
             else
             {
-                log.error("Venue cannot be modified");
+                LogHelper.logEntityNotUpdated(log, "Venue");
                 response.status(400);
             }
 

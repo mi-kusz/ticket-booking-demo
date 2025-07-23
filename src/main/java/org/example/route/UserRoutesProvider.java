@@ -5,6 +5,7 @@ import com.google.gson.JsonSyntaxException;
 import org.example.dao.UserDao;
 import org.example.dto.UserDto;
 import org.example.util.ErrorMessages;
+import org.example.util.LogHelper;
 import org.example.util.Util;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
@@ -59,7 +60,7 @@ public class UserRoutesProvider implements RoutesProvider
             String datetimeStart = request.queryParams("datetimeStart");
             String datetimeEnd = request.queryParams("datetimeEnd");
 
-            log.info("Received GET /users request with parameters: name={}, datetimeStart={}, datetimeEnd={}", name, datetimeStart, datetimeEnd);
+            LogHelper.logRequest(log, "GET", "/users", name, datetimeStart, datetimeEnd);
 
             if (areParametersValid(name, datetimeStart, datetimeEnd))
             {
@@ -80,8 +81,7 @@ public class UserRoutesProvider implements RoutesProvider
                     }
                     catch (DateTimeParseException e)
                     {
-                        log.error("Cannot parse provided dates: {} and {}", datetimeStart, datetimeEnd, e);
-
+                        LogHelper.logInvalidDates(log, datetimeStart, datetimeEnd);
                         response.status(400);
                         return ErrorMessages.INVALID_DATETIME;
                     }
@@ -91,13 +91,13 @@ public class UserRoutesProvider implements RoutesProvider
                     result = userDao.findUsers();
                 }
 
-                log.info("Responding with {} rows", result.size());
+                LogHelper.logListResponse(log, result.size());
                 response.status(200);
                 return gson.toJson(result);
             }
             else
             {
-                log.error("Wrong combination of parameters");
+                LogHelper.logWrongParameters(log);
                 response.status(400);
                 return ErrorMessages.INVALID_PARAMETERS;
             }
@@ -108,7 +108,8 @@ public class UserRoutesProvider implements RoutesProvider
     {
          get("/id/:id", (request, response) -> {
              String id = request.params(":id");
-             log.info("Received GET /users/id/{} request", id);
+
+             LogHelper.logRequest(log, "GET", "/users/id", id);
 
              int userId;
 
@@ -118,7 +119,7 @@ public class UserRoutesProvider implements RoutesProvider
             }
             catch (NumberFormatException e)
             {
-                log.error("Invalid id format: {}", id);
+                LogHelper.logInvalidId(log, id);
                 response.status(400);
                 return ErrorMessages.INVALID_ID;
             }
@@ -126,19 +127,15 @@ public class UserRoutesProvider implements RoutesProvider
 
             if (result.isPresent())
             {
-                log.info("User with id: {} found", id);
+                LogHelper.logIdFound(log, "User", id);
                 response.status(200);
                 return gson.toJson(result.get());
             }
             else
             {
-                log.info("User with id: {} not found", id);
+                LogHelper.logIdNotFound(log, "User", id);
                 response.status(404);
-                return """
-                        {
-                            "error": "User not found"
-                        }
-                        """;
+                return ErrorMessages.notFound("User");
             }
         });
     }
@@ -147,19 +144,20 @@ public class UserRoutesProvider implements RoutesProvider
     {
         get("/email/:email", (request, response) -> {
             String email = request.params(":email");
-            log.info("Received GET /users/email/{} request", email);
+
+            LogHelper.logRequest(log, "GET", "/users/email", email);
 
             Optional<UserDto> result = userDao.findUserByEmail(email);
 
             if (result.isPresent())
             {
-                log.info("User with email: {} found", email);
+                LogHelper.logEmailFound(log, email);
                 response.status(200);
                 return gson.toJson(result.get());
             }
             else
             {
-                log.info("User with email: {} not found", email);
+                LogHelper.logEmailNotFound(log, email);
                 response.status(404);
                 return ErrorMessages.notFound("User");
             }
@@ -171,13 +169,15 @@ public class UserRoutesProvider implements RoutesProvider
         post("", (request, response) -> {
             UserDto userDto;
 
+            LogHelper.logRequest(log, "POST", "/users");
+
             try
             {
                 userDto = gson.fromJson(request.body(), UserDto.class);
             }
             catch (JsonSyntaxException e)
             {
-                log.error("Wrong structure of UserDto JSON");
+                LogHelper.logWrongJson(log, "UserDto");
                 response.status(400);
                 return ErrorMessages.JSON_PARSE_ERROR;
             }
@@ -186,12 +186,12 @@ public class UserRoutesProvider implements RoutesProvider
 
             if (affected == 1)
             {
-                log.info("User added to database");
+                LogHelper.logEntityAdded(log, "User");
                 response.status(200);
             }
             else
             {
-                log.error("User cannot be added to database");
+                LogHelper.logEntityNotAdded(log, "User");
                 response.status(400);
             }
 
@@ -205,13 +205,15 @@ public class UserRoutesProvider implements RoutesProvider
         put("", (request, response) -> {
             UserDto userDto;
 
+            LogHelper.logRequest(log, "PUT", "/users");
+
             try
             {
                 userDto = gson.fromJson(request.body(), UserDto.class);
             }
             catch (JsonSyntaxException e)
             {
-                log.error("Wrong structure of UserDto JSON");
+                LogHelper.logWrongJson(log, "UserDto");
                 response.status(400);
                 return ErrorMessages.JSON_PARSE_ERROR;
             }
@@ -220,12 +222,12 @@ public class UserRoutesProvider implements RoutesProvider
 
             if (affected == 1)
             {
-                log.info("User modified");
+                LogHelper.logEntityUpdated(log, "User");
                 response.status(200);
             }
             else
             {
-                log.error("User cannot be modified");
+                LogHelper.logEntityNotUpdated(log, "User");
                 response.status(400);
             }
 

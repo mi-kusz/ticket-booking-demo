@@ -5,6 +5,7 @@ import com.google.gson.JsonSyntaxException;
 import org.example.dao.EventDao;
 import org.example.dto.EventDto;
 import org.example.util.ErrorMessages;
+import org.example.util.LogHelper;
 import org.example.util.Util;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
@@ -58,7 +59,7 @@ public class EventRoutesProvider implements RoutesProvider
             String datetimeStart = request.queryParams("datetimeStart");
             String datetimeEnd = request.queryParams("datetimeEnd");
 
-            log.info("Received GET /events request with parameters: name={}, datetimeStart={}, datetimeEnd={}", name, datetimeStart, datetimeEnd);
+            LogHelper.logRequest(log, "GET", "/events", name, datetimeStart, datetimeEnd);
 
             if (areParametersValid(name, datetimeStart, datetimeEnd))
             {
@@ -79,7 +80,7 @@ public class EventRoutesProvider implements RoutesProvider
                     }
                     catch (DateTimeParseException e)
                     {
-                        log.error("Cannot parse provided dates: {} and {}", datetimeStart, datetimeEnd, e);
+                        LogHelper.logInvalidDates(log, datetimeStart, datetimeEnd);
 
                         response.status(400);
                         return ErrorMessages.INVALID_DATETIME;
@@ -90,13 +91,13 @@ public class EventRoutesProvider implements RoutesProvider
                     result = eventDao.findEvents();
                 }
 
-                log.info("Responding with {} rows", result.size());
+                LogHelper.logListResponse(log, result.size());
                 response.status(200);
                 return gson.toJson(result);
             }
             else
             {
-                log.error("Wrong combination of parameters");
+                LogHelper.logWrongParameters(log);
                 response.status(400);
                 return ErrorMessages.INVALID_PARAMETERS;
             }
@@ -107,7 +108,8 @@ public class EventRoutesProvider implements RoutesProvider
     {
         get("/:id", ((request, response) -> {
             String id = request.params(":id");
-            log.info("Received GET /events/{} request", id);
+
+            LogHelper.logRequest(log, "GET", "/events/id", id);
 
             int eventId;
 
@@ -117,7 +119,7 @@ public class EventRoutesProvider implements RoutesProvider
             }
             catch (NumberFormatException e)
             {
-                log.error("Invalid id format: {}", id);
+                LogHelper.logInvalidId(log, id);
                 response.status(400);
                 return ErrorMessages.INVALID_ID;
             }
@@ -126,13 +128,13 @@ public class EventRoutesProvider implements RoutesProvider
 
             if (result.isPresent())
             {
-                log.info("Event with id: {} found", id);
+                LogHelper.logIdFound(log, "Event", id);
                 response.status(200);
                 return gson.toJson(result.get());
             }
             else
             {
-                log.info("Event with id: {} not found", id);
+                LogHelper.logIdNotFound(log, "Event", id);
                 response.status(404);
                 return ErrorMessages.notFound("Event");
             }
@@ -144,13 +146,15 @@ public class EventRoutesProvider implements RoutesProvider
         post("", (request, response) -> {
             EventDto eventDto;
 
+            LogHelper.logRequest(log, "POST", "/events");
+
             try
             {
                 eventDto = gson.fromJson(request.body(), EventDto.class);
             }
             catch (JsonSyntaxException e)
             {
-                log.error("Wrong structure of EventDto JSON");
+                LogHelper.logWrongJson(log, "EventDto");
                 response.status(400);
                 return ErrorMessages.JSON_PARSE_ERROR;
             }
@@ -159,12 +163,12 @@ public class EventRoutesProvider implements RoutesProvider
 
             if (affected == 1)
             {
-                log.info("Event added to database");
+                LogHelper.logEntityAdded(log, "Event");
                 response.status(200);
             }
             else
             {
-                log.error("Event cannot be added to database");
+                LogHelper.logEntityNotAdded(log, "Event");
                 response.status(400);
             }
 
@@ -177,13 +181,15 @@ public class EventRoutesProvider implements RoutesProvider
         put("", (request, response) -> {
             EventDto eventDto;
 
+            LogHelper.logRequest(log, "PUT", "/events");
+
             try
             {
                 eventDto = gson.fromJson(request.body(), EventDto.class);
             }
             catch (JsonSyntaxException e)
             {
-                log.error("Wrong structure of EventDto JSON");
+                LogHelper.logWrongJson(log, "EventDto");
                 response.status(400);
                 return ErrorMessages.JSON_PARSE_ERROR;
             }
@@ -192,12 +198,12 @@ public class EventRoutesProvider implements RoutesProvider
 
             if (affected == 1)
             {
-                log.info("Event modified");
+                LogHelper.logEntityUpdated(log, "Event");
                 response.status(200);
             }
             else
             {
-                log.error("Event cannot be modified");
+                LogHelper.logEntityNotUpdated(log, "Event");
                 response.status(400);
             }
 
