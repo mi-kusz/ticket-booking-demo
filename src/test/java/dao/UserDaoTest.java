@@ -317,24 +317,40 @@ public class UserDaoTest
     {
         UserDto user = testUser();
 
-        MockDataProvider dataProvider = ctx -> new MockResult[] { new MockResult(1, null) };
+        MockDataProvider dataProvider = ctx -> {
+            Record record = DSL.using(SQLDialect.POSTGRES).newRecord(USERS.fields());
+
+            record.set(USERS.USER_ID, user.userId());
+            record.set(USERS.NAME, user.name());
+            record.set(USERS.EMAIL, user.email());
+            record.set(USERS.CREATED_AT, user.createdAt());
+
+            Result<Record> result = DSL.using(SQLDialect.POSTGRES).newResult(USERS.fields());
+            result.add(record);
+
+            return new MockResult[] {new MockResult(1, result)};
+        };
 
         UserDao dao = new UserDao(dslFor(dataProvider));
-        int affected = dao.addUser(user);
+        Optional<UserDto> result = dao.addUser(user);
 
-        assertEquals(1, affected);
+        assertTrue(result.isPresent());
     }
 
     @Test void testAddUserError()
     {
         UserDto user = testUser();
 
-        MockDataProvider dataProvider = ctx -> new MockResult[] { new MockResult(0, null) };
+        MockDataProvider dataProvider = ctx -> {
+            Result<Record> result = DSL.using(SQLDialect.POSTGRES).newResult(USERS.fields());
+
+            return new MockResult[] {new MockResult(0, result)};
+        };
 
         UserDao dao = new UserDao(dslFor(dataProvider));
-        int affected = dao.addUser(user);
+        Optional<UserDto> result = dao.addUser(user);
 
-        assertEquals(0, affected);
+        assertTrue(result.isEmpty());
     }
 
     @Test
@@ -342,11 +358,23 @@ public class UserDaoTest
     {
         UserDto user = testUser();
 
-        MockDataProvider dataProvider = ctx -> new MockResult[] { new MockResult(1, null) };
+        MockDataProvider dataProvider = ctx -> {
+            Record record = DSL.using(SQLDialect.POSTGRES).newRecord(USERS.fields());
+
+            record.set(USERS.USER_ID, user.userId());
+            record.set(USERS.NAME, user.name());
+            record.set(USERS.EMAIL, user.email());
+            record.set(USERS.CREATED_AT, user.createdAt());
+
+            Result<Record> result = DSL.using(SQLDialect.POSTGRES).newResult(USERS.fields());
+            result.add(record);
+
+            return new MockResult[] {new MockResult(1, result)};
+        };
 
         UserDao dao = new UserDao(dslFor(dataProvider));
-        int affected = dao.modifyUser(user);
+        Optional<UserDto> result = dao.modifyUser(user);
 
-        assertEquals(1, affected);
+        assertTrue(result.isPresent());
     }
 }

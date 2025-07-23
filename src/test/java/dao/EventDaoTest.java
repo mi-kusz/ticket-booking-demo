@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.example.jooq.generated.tables.Events.EVENTS;
+import static org.example.jooq.generated.tables.Venues.VENUES;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class EventDaoTest
@@ -278,12 +279,25 @@ public class EventDaoTest
     {
         EventDto event = testEvent();
 
-        MockDataProvider dataProvider = ctx -> new MockResult[] { new MockResult(1, null) };
+        MockDataProvider dataProvider = ctx -> {
+            Record record = DSL.using(SQLDialect.POSTGRES).newRecord(EVENTS.fields());
+
+            record.set(EVENTS.EVENT_ID, event.eventId());
+            record.set(EVENTS.VENUE_ID, event.venueId());
+            record.set(EVENTS.NAME, event.name());
+            record.set(EVENTS.START_TIME, event.startTime());
+            record.set(EVENTS.END_TIME, event.endTime());
+
+            Result<Record> result = DSL.using(SQLDialect.POSTGRES).newResult(EVENTS.fields());
+            result.add(record);
+
+            return new MockResult[] {new MockResult(1, result)};
+        };
 
         EventDao eventDao = new EventDao(dslFor(dataProvider));
-        int affected = eventDao.addEvent(event);
+        Optional<EventDto> result = eventDao.addEvent(event);
 
-        assertEquals(1, affected);
+        assertTrue(result.isPresent());
     }
 
     @Test
@@ -291,12 +305,16 @@ public class EventDaoTest
     {
         EventDto event = testEvent();
 
-        MockDataProvider dataProvider = ctx -> new MockResult[] { new MockResult(0, null) };
+        MockDataProvider dataProvider = ctx -> {
+            Result<Record> result = DSL.using(SQLDialect.POSTGRES).newResult(EVENTS.fields());
+
+            return new MockResult[] {new MockResult(0, result)};
+        };
 
         EventDao eventDao = new EventDao(dslFor(dataProvider));
-        int affected = eventDao.addEvent(event);
+        Optional<EventDto> result = eventDao.addEvent(event);
 
-        assertEquals(0, affected);
+        assertTrue(result.isEmpty());
     }
 
     @Test
@@ -304,11 +322,24 @@ public class EventDaoTest
     {
         EventDto event = testEvent();
 
-        MockDataProvider dataProvider = ctx -> new MockResult[] { new MockResult(1, null) };
+        MockDataProvider dataProvider = ctx -> {
+            Record record = DSL.using(SQLDialect.POSTGRES).newRecord(EVENTS.fields());
+
+            record.set(EVENTS.EVENT_ID, event.eventId());
+            record.set(EVENTS.VENUE_ID, event.venueId());
+            record.set(EVENTS.NAME, event.name());
+            record.set(EVENTS.START_TIME, event.startTime());
+            record.set(EVENTS.END_TIME, event.endTime());
+
+            Result<Record> result = DSL.using(SQLDialect.POSTGRES).newResult(EVENTS.fields());
+            result.add(record);
+
+            return new MockResult[] {new MockResult(1, result)};
+        };
 
         EventDao dao = new EventDao(dslFor(dataProvider));
-        int affected = dao.modifyEvent(event);
+        Optional<EventDto> result = dao.modifyEvent(event);
 
-        assertEquals(1, affected);
+        assertTrue(result.isPresent());
     }
 }

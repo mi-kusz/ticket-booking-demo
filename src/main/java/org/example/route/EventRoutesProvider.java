@@ -159,20 +159,20 @@ public class EventRoutesProvider implements RoutesProvider
                 return ErrorMessages.JSON_PARSE_ERROR;
             }
 
-            int affected = eventDao.addEvent(eventDto);
+            Optional<EventDto> result = eventDao.addEvent(eventDto);
 
-            if (affected == 1)
+            if (result.isPresent())
             {
                 LogHelper.logEntityAdded(log, "Event");
                 response.status(200);
+                return gson.toJson(result.get());
             }
             else
             {
                 LogHelper.logEntityNotAdded(log, "Event");
                 response.status(400);
+                return ErrorMessages.CANNOT_INSERT_DATA;
             }
-
-            return gson.toJson(eventDto);
         });
     }
 
@@ -194,20 +194,20 @@ public class EventRoutesProvider implements RoutesProvider
                 return ErrorMessages.JSON_PARSE_ERROR;
             }
 
-            int affected = eventDao.modifyEvent(eventDto);
+            Optional<EventDto> result = eventDao.modifyEvent(eventDto);
 
-            if (affected == 1)
+            if (result.isPresent())
             {
                 LogHelper.logEntityUpdated(log, "Event");
                 response.status(200);
+                return gson.toJson(result.get());
             }
             else
             {
                 LogHelper.logEntityNotUpdated(log, "Event");
                 response.status(400);
+                return ErrorMessages.CANNOT_UPDATE_DATA;
             }
-
-            return gson.toJson(eventDto);
         });
     }
 }

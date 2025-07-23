@@ -74,39 +74,43 @@ public class VenueDao
                 .map(this::toDto);
     }
 
-    public int addVenue(VenueDto venueDto)
+    public Optional<VenueDto> addVenue(VenueDto venueDto)
     {
         log.info("Adding venue");
 
         try
         {
-            return dsl.insertInto(VENUES, VENUES.NAME, VENUES.ADDRESS)
+            return Optional.ofNullable(dsl.insertInto(VENUES, VENUES.NAME, VENUES.ADDRESS)
                     .values(venueDto.name(), venueDto.address())
-                    .execute();
+                    .returning()
+                    .fetchOne()
+            ).map(this::toDto);
         }
         catch (DataAccessException e)
         {
             log.error("Cannot add venue", e);
-            return 0;
+            return Optional.empty();
         }
     }
 
-    public int modifyVenue(VenueDto venueDto)
+    public Optional<VenueDto> modifyVenue(VenueDto venueDto)
     {
         log.info("Modifying venue with id: {}", venueDto.venueId());
 
         try
         {
-            return dsl.update(VENUES)
+            return Optional.ofNullable(dsl.update(VENUES)
                     .set(VENUES.NAME, venueDto.name())
                     .set(VENUES.ADDRESS, venueDto.address())
                     .where(VENUES.VENUE_ID.eq(venueDto.venueId()))
-                    .execute();
+                    .returning()
+                    .fetchOne()
+            ).map(this::toDto);
         }
         catch (DataAccessException e)
         {
             log.error("Cannot modify venue", e);
-            return 0;
+            return Optional.empty();
         }
     }
 

@@ -67,39 +67,45 @@ public class EventDao
                 .map(this::toDto);
     }
 
-    public int addEvent(EventDto eventDto)
+    public Optional<EventDto> addEvent(EventDto eventDto)
     {
         log.info("Adding event");
 
         try
         {
-            return dsl.insertInto(EVENTS, EVENTS.VENUE_ID, EVENTS.NAME, EVENTS.START_TIME, EVENTS.END_TIME)
+            return Optional.ofNullable(
+                    dsl.insertInto(EVENTS, EVENTS.VENUE_ID, EVENTS.NAME, EVENTS.START_TIME, EVENTS.END_TIME)
                     .values(eventDto.venueId(), eventDto.name(), eventDto.startTime(), eventDto.endTime())
-                    .execute();
+                    .returning()
+                    .fetchOne()
+            ).map(this::toDto);
         }
         catch (DataAccessException e)
         {
             log.error("Cannot add event", e);
-            return 0;
+            return Optional.empty();
         }
     }
 
-    public int modifyEvent(EventDto eventDto)
+    public Optional<EventDto> modifyEvent(EventDto eventDto)
     {
         log.info("Modifying event with id: {}", eventDto.eventId());
 
         try
         {
-            return dsl.update(EVENTS)
+            return Optional.ofNullable(dsl.update(EVENTS)
                     .set(EVENTS.NAME, eventDto.name())
                     .set(EVENTS.START_TIME, eventDto.startTime())
                     .set(EVENTS.END_TIME, eventDto.endTime())
-                    .where(EVENTS.EVENT_ID.eq(eventDto.eventId())).execute();
+                    .where(EVENTS.EVENT_ID.eq(eventDto.eventId()))
+                    .returning()
+                    .fetchOne()
+            ).map(this::toDto);
         }
         catch (DataAccessException e)
         {
             log.error("Cannot modify event", e);
-            return 0;
+            return Optional.empty();
         }
     }
 

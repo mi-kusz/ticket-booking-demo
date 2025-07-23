@@ -159,21 +159,20 @@ public class SeatRoutesProvider implements RoutesProvider
                 return ErrorMessages.JSON_PARSE_ERROR;
             }
 
-            int affected = seatDao.addSeat(seatDto);
+            Optional<SeatDto> result = seatDao.addSeat(seatDto);
 
-            if (affected == 1)
+            if (result.isPresent())
             {
                 LogHelper.logEntityAdded(log, "Seat");
                 response.status(200);
+                return gson.toJson(result.get());
             }
             else
             {
                 LogHelper.logEntityNotAdded(log, "Seat");
-                log.error("Seat cannot be added to database");
                 response.status(400);
+                return ErrorMessages.CANNOT_INSERT_DATA;
             }
-
-            return gson.toJson(seatDto);
         });
     }
 
@@ -195,20 +194,20 @@ public class SeatRoutesProvider implements RoutesProvider
                 return ErrorMessages.JSON_PARSE_ERROR;
             }
 
-            int affected = seatDao.modifySeat(seatDto);
+            Optional<SeatDto> result = seatDao.modifySeat(seatDto);
 
-            if (affected == 1)
+            if (result.isPresent())
             {
                 LogHelper.logEntityUpdated(log, "Seat");
                 response.status(200);
+                return gson.toJson(result.get());
             }
             else
             {
                 LogHelper.logEntityNotUpdated(log, "Seat");
                 response.status(400);
+                return ErrorMessages.CANNOT_UPDATE_DATA;
             }
-
-            return gson.toJson(seatDto);
         });
     }
 }

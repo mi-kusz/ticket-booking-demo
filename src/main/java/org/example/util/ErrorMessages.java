@@ -12,6 +12,8 @@ public class ErrorMessages
     public static final String INVALID_DATETIME;
     public static final String INVALID_PARAMETERS;
     public static final String JSON_PARSE_ERROR;
+    public static final String CANNOT_INSERT_DATA;
+    public static final String CANNOT_UPDATE_DATA;
 
     static
     {
@@ -21,6 +23,8 @@ public class ErrorMessages
         INVALID_DATETIME = gson.toJson(error("Invalid datetime format"));
         INVALID_PARAMETERS = gson.toJson(error("Invalid combination of parameters"));
         JSON_PARSE_ERROR = gson.toJson(error("Cannot parse JSON"));
+        CANNOT_INSERT_DATA = gson.toJson(error("Cannot insert provided data"));
+        CANNOT_UPDATE_DATA = gson.toJson(error("Cannot update provided data"));
     }
 
     private static Map<String, String> error(String message)

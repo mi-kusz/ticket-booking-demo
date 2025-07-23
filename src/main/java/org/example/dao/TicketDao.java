@@ -75,41 +75,45 @@ public class TicketDao
                 .map(this::toDto);
     }
 
-    public int addTicket(TicketDto ticketDto)
+    public Optional<TicketDto> addTicket(TicketDto ticketDto)
     {
         log.info("Adding ticket");
 
         try
         {
-            return dsl.insertInto(TICKETS, TICKETS.EVENT_ID, TICKETS.SEAT_ID, TICKETS.USER_ID, TICKETS.BOOKED_AT)
+            return Optional.ofNullable(dsl.insertInto(TICKETS, TICKETS.EVENT_ID, TICKETS.SEAT_ID, TICKETS.USER_ID, TICKETS.BOOKED_AT)
                     .values(ticketDto.eventId(), ticketDto.seatId(), ticketDto.userId(), ticketDto.bookedAt())
-                    .execute();
+                    .returning()
+                    .fetchOne()
+            ).map(this::toDto);
         }
         catch (DataAccessException e)
         {
             log.error("Cannot add ticket", e);
-            return 0;
+            return Optional.empty();
         }
     }
 
-    public int modifyTicket(TicketDto ticketDto)
+    public Optional<TicketDto> modifyTicket(TicketDto ticketDto)
     {
         log.info("Modifying ticket with id: {}", ticketDto.ticketId());
 
         try
         {
-            return dsl.update(TICKETS)
+            return Optional.ofNullable(dsl.update(TICKETS)
                     .set(TICKETS.EVENT_ID, ticketDto.eventId())
                     .set(TICKETS.SEAT_ID, ticketDto.seatId())
                     .set(TICKETS.USER_ID, ticketDto.userId())
                     .set(TICKETS.BOOKED_AT, ticketDto.bookedAt())
                     .where(TICKETS.TICKET_ID.eq(ticketDto.ticketId()))
-                    .execute();
+                    .returning()
+                    .fetchOne()
+            ).map(this::toDto);
         }
         catch (DataAccessException e)
         {
             log.error("Cannot modify ticket", e);
-            return 0;
+            return Optional.empty();
         }
     }
 

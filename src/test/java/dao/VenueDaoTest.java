@@ -335,12 +335,23 @@ public class VenueDaoTest
     {
         VenueDto venue = testVenue();
 
-        MockDataProvider dataProvider = ctx -> new MockResult[] { new MockResult(1, null) };
+        MockDataProvider dataProvider = ctx -> {
+            Record record = DSL.using(SQLDialect.POSTGRES).newRecord(VENUES.fields());
+
+            record.set(VENUES.VENUE_ID, venue.venueId());
+            record.set(VENUES.NAME, venue.name());
+            record.set(VENUES.ADDRESS, venue.address());
+
+            Result<Record> result = DSL.using(SQLDialect.POSTGRES).newResult(VENUES.fields());
+            result.add(record);
+
+            return new MockResult[] {new MockResult(1, result)};
+        };
 
         VenueDao dao = new VenueDao(dslFor(dataProvider));
-        int affected = dao.addVenue(venue);
+        Optional<VenueDto> result = dao.addVenue(venue);
 
-        assertEquals(1, affected);
+        assertTrue(result.isPresent());
     }
 
     @Test
@@ -348,12 +359,16 @@ public class VenueDaoTest
     {
         VenueDto venue = testVenue();
 
-        MockDataProvider dataProvider = ctx -> new MockResult[] { new MockResult(0, null) };
+        MockDataProvider dataProvider = ctx -> {
+            Result<Record> result = DSL.using(SQLDialect.POSTGRES).newResult(VENUES.fields());
+
+            return new MockResult[] {new MockResult(0, result)};
+        };
 
         VenueDao dao = new VenueDao(dslFor(dataProvider));
-        int affected = dao.addVenue(venue);
+        Optional<VenueDto> result = dao.addVenue(venue);
 
-        assertEquals(0, affected);
+        assertTrue(result.isEmpty());
     }
 
     @Test
@@ -361,11 +376,22 @@ public class VenueDaoTest
     {
         VenueDto venue = testVenue();
 
-        MockDataProvider dataProvider = ctx -> new MockResult[] { new MockResult(1, null) };
+        MockDataProvider dataProvider = ctx -> {
+            Record record = DSL.using(SQLDialect.POSTGRES).newRecord(VENUES.fields());
+
+            record.set(VENUES.VENUE_ID, venue.venueId());
+            record.set(VENUES.NAME, venue.name());
+            record.set(VENUES.ADDRESS, venue.address());
+
+            Result<Record> result = DSL.using(SQLDialect.POSTGRES).newResult(VENUES.fields());
+            result.add(record);
+
+            return new MockResult[] {new MockResult(1, result)};
+        };
 
         VenueDao dao = new VenueDao(dslFor(dataProvider));
-        int affected = dao.modifyVenue(venue);
+        Optional<VenueDto> result = dao.modifyVenue(venue);
 
-        assertEquals(1, affected);
+        assertTrue(result.isPresent());
     }
 }

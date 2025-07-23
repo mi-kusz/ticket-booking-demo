@@ -182,20 +182,20 @@ public class UserRoutesProvider implements RoutesProvider
                 return ErrorMessages.JSON_PARSE_ERROR;
             }
 
-            int affected = userDao.addUser(userDto);
+            Optional<UserDto> result = userDao.addUser(userDto);
 
-            if (affected == 1)
+            if (result.isPresent())
             {
                 LogHelper.logEntityAdded(log, "User");
                 response.status(200);
+                return gson.toJson(result.get());
             }
             else
             {
                 LogHelper.logEntityNotAdded(log, "User");
                 response.status(400);
+                return ErrorMessages.CANNOT_INSERT_DATA;
             }
-
-            return gson.toJson(userDto);
         });
     }
 
@@ -218,20 +218,20 @@ public class UserRoutesProvider implements RoutesProvider
                 return ErrorMessages.JSON_PARSE_ERROR;
             }
 
-            int affected = userDao.modifyUser(userDto);
+            Optional<UserDto> result = userDao.modifyUser(userDto);
 
-            if (affected == 1)
+            if (result.isPresent())
             {
                 LogHelper.logEntityUpdated(log, "User");
                 response.status(200);
+                return gson.toJson(result.get());
             }
             else
             {
                 LogHelper.logEntityNotUpdated(log, "User");
                 response.status(400);
+                return ErrorMessages.CANNOT_UPDATE_DATA;
             }
-
-            return gson.toJson(userDto);
         });
     }
 }

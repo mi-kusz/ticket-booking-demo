@@ -268,12 +268,24 @@ public class SeatDaoTest
     {
         SeatDto seat = testSeat();
 
-        MockDataProvider dataProvider = ctx -> new MockResult[] { new MockResult(1, null) };
+        MockDataProvider dataProvider = ctx -> {
+            Record record = DSL.using(SQLDialect.POSTGRES).newRecord(SEATS.fields());
+
+            record.set(SEATS.SEAT_ID, seat.seatId());
+            record.set(SEATS.VENUE_ID, seat.venueId());
+            record.set(SEATS.SEAT_ROW, seat.seatRow());
+            record.set(SEATS.SEAT_NUMBER, seat.seatNumber());
+
+            Result<Record> result = DSL.using(SQLDialect.POSTGRES).newResult(SEATS.fields());
+            result.add(record);
+
+            return new MockResult[] {new MockResult(1, result)};
+        };
 
         SeatDao dao = new SeatDao(dslFor(dataProvider));
-        int affected = dao.addSeat(seat);
+        Optional<SeatDto> result = dao.addSeat(seat);
 
-        assertEquals(1, affected);
+        assertTrue(result.isPresent());
     }
 
     @Test
@@ -281,12 +293,16 @@ public class SeatDaoTest
     {
         SeatDto seat = testSeat();
 
-        MockDataProvider dataProvider = ctx -> new MockResult[] { new MockResult(0, null) };
+        MockDataProvider dataProvider = ctx -> {
+            Result<Record> result = DSL.using(SQLDialect.POSTGRES).newResult(SEATS.fields());
+
+            return new MockResult[] {new MockResult(0, result)};
+        };
 
         SeatDao dao = new SeatDao(dslFor(dataProvider));
-        int affected = dao.addSeat(seat);
+        Optional<SeatDto> result = dao.addSeat(seat);
 
-        assertEquals(0, affected);
+        assertTrue(result.isEmpty());
     }
 
     @Test
@@ -294,11 +310,23 @@ public class SeatDaoTest
     {
         SeatDto seat = testSeat();
 
-        MockDataProvider dataProvider = ctx -> new MockResult[] { new MockResult(1, null) };
+        MockDataProvider dataProvider = ctx -> {
+            Record record = DSL.using(SQLDialect.POSTGRES).newRecord(SEATS.fields());
+
+            record.set(SEATS.SEAT_ID, seat.seatId());
+            record.set(SEATS.VENUE_ID, seat.venueId());
+            record.set(SEATS.SEAT_ROW, seat.seatRow());
+            record.set(SEATS.SEAT_NUMBER, seat.seatNumber());
+
+            Result<Record> result = DSL.using(SQLDialect.POSTGRES).newResult(SEATS.fields());
+            result.add(record);
+
+            return new MockResult[] {new MockResult(1, result)};
+        };
 
         SeatDao dao = new SeatDao(dslFor(dataProvider));
-        int affected = dao.modifySeat(seat);
+        Optional<SeatDto> result = dao.modifySeat(seat);
 
-        assertEquals(1, affected);
+        assertTrue(result.isPresent());
     }
 }

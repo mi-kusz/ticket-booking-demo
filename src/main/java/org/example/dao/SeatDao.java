@@ -64,40 +64,44 @@ public class SeatDao
                 .map(this::toDto);
     }
 
-    public int addSeat(SeatDto seatDto)
+    public Optional<SeatDto> addSeat(SeatDto seatDto)
     {
         log.info("Adding seat");
 
         try
         {
-            return dsl.insertInto(SEATS, SEATS.VENUE_ID, SEATS.SEAT_ROW, SEATS.SEAT_NUMBER)
+            return Optional.ofNullable(dsl.insertInto(SEATS, SEATS.VENUE_ID, SEATS.SEAT_ROW, SEATS.SEAT_NUMBER)
                     .values(seatDto.venueId(), seatDto.seatRow(), seatDto.seatNumber())
-                    .execute();
+                    .returning()
+                    .fetchOne()
+            ).map(this::toDto);
         }
         catch (DataAccessException e)
         {
             log.error("Cannot add seat", e);
-            return 0;
+            return Optional.empty();
         }
     }
 
-    public int modifySeat(SeatDto seatDto)
+    public Optional<SeatDto> modifySeat(SeatDto seatDto)
     {
         log.info("Modifying seat with id: {}", seatDto.seatId());
 
         try
         {
-            return dsl.update(SEATS)
+            return Optional.ofNullable(dsl.update(SEATS)
                     .set(SEATS.VENUE_ID, seatDto.venueId())
                     .set(SEATS.SEAT_ROW, seatDto.seatRow())
                     .set(SEATS.SEAT_NUMBER, seatDto.seatNumber())
                     .where(SEATS.SEAT_ID.eq(seatDto.seatId()))
-                    .execute();
+                    .returning()
+                    .fetchOne()
+            ).map(this::toDto);
         }
         catch (DataAccessException e)
         {
             log.error("Cannot modify seat", e);
-            return 0;
+            return Optional.empty();
         }
     }
 

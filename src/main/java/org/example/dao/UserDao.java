@@ -76,39 +76,44 @@ public class UserDao
                 .map(this::toDto);
     }
 
-    public int addUser(UserDto userDto)
+    public Optional<UserDto> addUser(UserDto userDto)
     {
         log.info("Adding user");
 
         try
         {
-            return dsl.insertInto(USERS, USERS.NAME, USERS.EMAIL, USERS.CREATED_AT)
+            return Optional.ofNullable(
+                    dsl.insertInto(USERS, USERS.NAME, USERS.EMAIL, USERS.CREATED_AT)
                     .values(userDto.name(), userDto.email(), userDto.createdAt())
-                    .execute();
+                    .returning()
+                    .fetchOne()
+            ).map(this::toDto);
         }
         catch (DataAccessException e)
         {
             log.error("Cannot add user", e);
-            return 0;
+            return Optional.empty();
         }
     }
 
-    public int modifyUser(UserDto userDto)
+    public Optional<UserDto> modifyUser(UserDto userDto)
     {
         log.info("Modifying user with id: {}", userDto.userId());
 
         try
         {
-            return dsl.update(USERS)
+            return Optional.ofNullable(dsl.update(USERS)
                     .set(USERS.NAME, userDto.name())
                     .set(USERS.EMAIL, userDto.email())
                     .where(USERS.USER_ID.eq(userDto.userId()))
-                    .execute();
+                    .returning()
+                    .fetchOne()
+            ).map(this::toDto);
         }
         catch (DataAccessException e)
         {
             log.error("Cannot modify user", e);
-            return 0;
+            return Optional.empty();
         }
     }
 

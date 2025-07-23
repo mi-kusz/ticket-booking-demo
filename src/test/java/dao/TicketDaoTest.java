@@ -357,12 +357,25 @@ public class TicketDaoTest
     {
         TicketDto ticket = testTicket();
 
-        MockDataProvider dataProvider = ctx -> new MockResult[] { new MockResult(1, null) };
+        MockDataProvider dataProvider = ctx -> {
+            Record record = DSL.using(SQLDialect.POSTGRES).newRecord(TICKETS.fields());
+
+            record.set(TICKETS.TICKET_ID, ticket.ticketId());
+            record.set(TICKETS.EVENT_ID, ticket.eventId());
+            record.set(TICKETS.SEAT_ID, ticket.seatId());
+            record.set(TICKETS.USER_ID, ticket.userId());
+            record.set(TICKETS.BOOKED_AT, ticket.bookedAt());
+
+            Result<Record> result = DSL.using(SQLDialect.POSTGRES).newResult(TICKETS.fields());
+            result.add(record);
+
+            return new MockResult[] {new MockResult(1, result)};
+        };
 
         TicketDao dao = new TicketDao(dslFor(dataProvider));
-        int affected = dao.addTicket(ticket);
+        Optional<TicketDto> result = dao.addTicket(ticket);
 
-        assertEquals(1, affected);
+        assertTrue(result.isPresent());
     }
 
     @Test
@@ -370,12 +383,16 @@ public class TicketDaoTest
     {
         TicketDto ticket = testTicket();
 
-        MockDataProvider dataProvider = ctx -> new MockResult[] { new MockResult(1, null) };
+        MockDataProvider dataProvider = ctx -> {
+            Result<Record> result = DSL.using(SQLDialect.POSTGRES).newResult(TICKETS.fields());
+
+            return new MockResult[] {new MockResult(0, result)};
+        };
 
         TicketDao dao = new TicketDao(dslFor(dataProvider));
-        int affected = dao.addTicket(ticket);
+        Optional<TicketDto> result = dao.addTicket(ticket);
 
-        assertEquals(1, affected);
+        assertTrue(result.isEmpty());
     }
 
     @Test
@@ -383,11 +400,24 @@ public class TicketDaoTest
     {
         TicketDto ticket = testTicket();
 
-        MockDataProvider dataProvider = ctx -> new MockResult[] { new MockResult(1, null) };
+        MockDataProvider dataProvider = ctx -> {
+            Record record = DSL.using(SQLDialect.POSTGRES).newRecord(TICKETS.fields());
+
+            record.set(TICKETS.TICKET_ID, ticket.ticketId());
+            record.set(TICKETS.EVENT_ID, ticket.eventId());
+            record.set(TICKETS.SEAT_ID, ticket.seatId());
+            record.set(TICKETS.USER_ID, ticket.userId());
+            record.set(TICKETS.BOOKED_AT, ticket.bookedAt());
+
+            Result<Record> result = DSL.using(SQLDialect.POSTGRES).newResult(TICKETS.fields());
+            result.add(record);
+
+            return new MockResult[] {new MockResult(1, result)};
+        };
 
         TicketDao dao = new TicketDao(dslFor(dataProvider));
-        int affected = dao.modifyTicket(ticket);
+        Optional<TicketDto> result = dao.modifyTicket(ticket);
 
-        assertEquals(1, affected);
+        assertTrue(result.isPresent());
     }
 }
