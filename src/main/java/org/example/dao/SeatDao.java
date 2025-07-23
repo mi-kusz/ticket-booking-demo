@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.example.jooq.generated.tables.Seats.SEATS;
-import static org.example.jooq.generated.tables.Tickets.TICKETS;
 
 public class SeatDao
 {

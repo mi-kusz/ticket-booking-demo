@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.example.jooq.generated.tables.Tickets.TICKETS;
-import static org.example.jooq.generated.tables.Venues.VENUES;
 
 public class TicketDao
 {

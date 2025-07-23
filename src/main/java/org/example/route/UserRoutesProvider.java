@@ -2,6 +2,7 @@ package org.example.route;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import org.example.config.GsonProvider;
 import org.example.dao.UserDao;
 import org.example.dto.UserDto;
 import org.example.util.ErrorMessages;
@@ -22,12 +23,11 @@ public class UserRoutesProvider implements RoutesProvider
 {
     private static final Logger log = LoggerFactory.getLogger(UserRoutesProvider.class);
     private final UserDao userDao;
-    private final Gson gson;
+    private final Gson gson = GsonProvider.getGson();
 
-    public UserRoutesProvider(DSLContext dsl, Gson gson)
+    public UserRoutesProvider(DSLContext dsl)
     {
         userDao = new UserDao(dsl);
-        this.gson = gson;
     }
 
     @Override

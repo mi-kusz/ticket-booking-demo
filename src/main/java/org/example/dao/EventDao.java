@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.example.jooq.generated.tables.Events.EVENTS;
-import static org.example.jooq.generated.tables.Seats.SEATS;
 
 public class EventDao
 {

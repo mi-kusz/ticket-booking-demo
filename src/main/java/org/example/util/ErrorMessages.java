@@ -1,7 +1,7 @@
 package org.example.util;
 
 import com.google.gson.Gson;
-import org.example.GsonProvider;
+import org.example.config.GsonProvider;
 
 import java.util.Map;
 
